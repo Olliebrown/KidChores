@@ -4,10 +4,19 @@
   "description": "Simple web site for tracking chores and paying allowance.",
   "main": "index.html",
   "scripts": {
-    "client": "webpack",
-    "server": "nodemon --exec npm run babel-node -- server/main.js",
+    "start": "run-s clean client server",
+    "dev": "run-p devclient devserv", 
+    "devclient": "run-s clean devclient2",
+    "devclient2": "webpack",
+    "devserv": "nodemon --exec npm run babel-node -- server/main.js",
+    "client": "webpack --config webpack.deploy.js",
+    "server": "babel-node -- server/main.js",
     "babel-node": "babel-node --ignore='node_modules'",
+    "clean": "rm -f public/app.bundle.* public/vendor.bundle.*",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "10.x"
   },
   "private": true,
   "keywords": [
