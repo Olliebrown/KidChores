@@ -1,5 +1,4 @@
 // Basic node libraries
-import fs from 'fs'
 import http from 'http'
 import https from 'https'
 
@@ -29,8 +28,8 @@ sslServer.use(Express.static('public'))
 
 // Create SSL backed server
 const sslOptions = {
-  key: fs.readFileSync(config.SSLKeyFile),
-  cert: fs.readFileSync(config.SSLCertificatefile)
+  key: config.SSLKey,
+  cert: config.SSLCertificate
 }
 
 https.createServer(sslOptions, sslServer).listen(config.SSLPort, config.host, () => {

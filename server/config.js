@@ -1,4 +1,5 @@
 // SERVER SIDE CONFIGURATION
+import fs from 'fs'
 
 // Capture all environment flags currently set
 const env = process.env
@@ -12,14 +13,43 @@ export default {
   host: env.HOST || '0.0.0.0',
   browserSyncPort: 9000,
 
+  // Test if running deployed on heroku
+  get HEROKU () {
+    return (env.NODE && ~env.NODE.indexOf('heroku'))
+  },
+
   // SSL Options
   SSLPort: env.SSL_PORT || 8443,
-  SSLKeyFile: './server/ssl.key',
-  SSLCertificatefile: './server/ssl.cert',
+  get SSLKey () {
+    if (this.HEROKU) {
+      return env.SSL_CERT_KEY
+    } else {
+      return fs.readFileSync('./server/ssl.key')
+    }
+  },
+  get SSLCertificate () {
+    if (this.HEROKU) {
+      return env.SSL_CERT_KEY
+    } else {
+      return fs.readFileSync('./server/ssl.cert')
+    }
+  },
 
   // Web Token Options
-  JWTPublicKeyFile: './server/jwt_rsa.pub',
-  JWTPrivateKeyfile: './server/jwt_rsa.key',
+  get JWTPublicKey () {
+    if (this.HEROKU) {
+      return env.JWT_PUBLIC_KEY
+    } else {
+      return fs.readFileSync('./server/jwt_rsa.pub')
+    }
+  },
+  get JWTPrivateKey () {
+    if (this.HEROKU) {
+      return env.JWT_PRIVATE_KEY
+    } else {
+      return fs.readFileSync('./server/jwt_rsa.key')
+    }
+  },
   JWTOptions: {
     issuer: `Kid Chore Tool (${ADMIN})`,
     audience: `Kid Chore Tool Users`,

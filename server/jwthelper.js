@@ -1,6 +1,3 @@
-// Basic filesystem module for reading RSA keys
-import fs from 'fs'
-
 // Easy to use JWT implementation
 import jwt from 'jsonwebtoken'
 
@@ -8,8 +5,8 @@ import jwt from 'jsonwebtoken'
 import config from './config'
 
 // PRIVATE and PUBLIC key
-let privateKEY = fs.readFileSync(config.JWTPrivateKeyfile, 'utf8')
-let publicKEY = fs.readFileSync(config.JWTPublicKeyFile, 'utf8')
+let privateKEY = config.JWTPrivateKey
+let publicKEY = config.JWTPublicKey
 
 // Create a JWT for use when authorizing a user
 // WARNING: Make sure you verify the user before issuing a token
