@@ -1,0 +1,34 @@
+{ "categories": [{
+    "name": "Morning", "startHour": 5, "tasks": [
+      { "name": "Get Dressed", "value": 0.2, "details": "Fully dressed with socks and clean underwear." },
+      { "name": "Brush Hair", "value": 0.2, "details": "Brush your hair to get rid of tangles." },
+      { "name": "Eat Breakfast", "value": 0.2, "details": "Prepare and eat breakfast." },
+      { "name": "Pack Backpack", "value": 0.2, "details": "Put lunch and folder in backpack." },
+      { "name": "Dress for Outside", "value": 0.2, "details": "Put on shoes, coat, winter gear, etc." }
+    ]
+  }, {
+    "name": "After School", "startHour": 12, "tasks": [
+      { "name": "Get Dressed", "value": 0.2, "details": "Fully dressed with socks and clean underwear." },
+      { "name": "Brush Hair", "value": 0.2, "details": "Brush your hair to get rid of tangles." },
+      { "name": "Eat Breakfast", "value": 0.2, "details": "Prepare and eat breakfast." },
+      { "name": "Pack Backpack", "value": 0.2, "details": "Put lunch and folder in backpack." },
+      { "name": "Dress for Outside", "value": 0.2, "details": "Put on shoes, coat, winter gear, etc." }
+    ]
+  }, {
+    "name": "Evening", "startHour": 17, "tasks": [
+      { "name": "Get Dressed", "value": 0.2, "details": "Fully dressed with socks and clean underwear." },
+      { "name": "Brush Hair", "value": 0.2, "details": "Brush your hair to get rid of tangles." },
+      { "name": "Eat Breakfast", "value": 0.2, "details": "Prepare and eat breakfast." },
+      { "name": "Pack Backpack", "value": 0.2, "details": "Put lunch and folder in backpack." },
+      { "name": "Dress for Outside", "value": 0.2, "details": "Put on shoes, coat, winter gear, etc." }
+    ]
+  }, {
+    "name": "Bedtime", "startHour": 19, "tasks": [
+      { "name": "Get Dressed", "value": 0.2, "details": "Fully dressed with socks and clean underwear." },
+      { "name": "Brush Hair", "value": 0.2, "details": "Brush your hair to get rid of tangles." },
+      { "name": "Eat Breakfast", "value": 0.2, "details": "Prepare and eat breakfast." },
+      { "name": "Pack Backpack", "value": 0.2, "details": "Put lunch and folder in backpack." },
+      { "name": "Dress for Outside", "value": 0.2, "details": "Put on shoes, coat, winter gear, etc." }
+    ]
+  }
+]}
