@@ -10,7 +10,7 @@ const ADMIN = 'seth.berrier@gmail.com'
 export default {
   // Setup the port and host from environment vars or defaults
   port: env.PORT || 8000,
-  host: env.HOST || '0.0.0.0',
+  host: env.HOST_APP || '0.0.0.0',
   browserSyncPort: 9000,
 
   // Test if running deployed on heroku
