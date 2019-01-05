@@ -10745,7 +10745,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- // ID used for the main Bootstrap accordion container
+ // Initialize the current date to today
+
+var currentDate = Object(_utils__WEBPACK_IMPORTED_MODULE_4__["today"])(); // ID used for the main Bootstrap accordion container
 
 var ACCORDION_ID = 'taskCategoriesAccordion'; // Identifies the default collapse category while constructing the task matrix
 
@@ -10758,7 +10760,20 @@ jquery__WEBPACK_IMPORTED_MODULE_3___default()(document).ready(function () {
     userInfo = data;
     Object(_user__WEBPACK_IMPORTED_MODULE_6__["updateUserState"])(userInfo);
     Object(_data__WEBPACK_IMPORTED_MODULE_5__["retrieveCategorySchema"])(processTaskData);
-  }); // Setup form callbacks
+  }); // Setup date nav links
+
+  jquery__WEBPACK_IMPORTED_MODULE_3___default()('#prevDayLink').click(function (e) {
+    e.preventDefault();
+    currentDate.setDate(currentDate.getDate() - 1);
+    updateDateNav();
+  });
+  jquery__WEBPACK_IMPORTED_MODULE_3___default()('#nextDayLink').click(function (e) {
+    e.preventDefault();
+    currentDate.setDate(currentDate.getDate() + 1);
+    updateDateNav();
+  }); // Initialize the date values
+
+  updateDateNav(); // Setup form callbacks
 
   jquery__WEBPACK_IMPORTED_MODULE_3___default()('#loginUserForm').on('submit', loginSubmit);
   jquery__WEBPACK_IMPORTED_MODULE_3___default()('#newUserForm').on('submit', newUserSubmit);
@@ -10820,6 +10835,29 @@ function newUserSubmit(event) {
 function updateUserSubmit(event) {
   event.preventDefault();
   Object(_user__WEBPACK_IMPORTED_MODULE_6__["updateExistingUser"])();
+}
+
+var format = {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+};
+
+function updateDateNav() {
+  var previous = new Date(currentDate);
+  var next = new Date(currentDate);
+  previous.setDate(previous.getDate() - 1);
+  next.setDate(next.getDate() + 1);
+  jquery__WEBPACK_IMPORTED_MODULE_3___default()('#prevDayText').text(previous.toLocaleString('en-US', format));
+  jquery__WEBPACK_IMPORTED_MODULE_3___default()('#curDayText').text(currentDate.toLocaleString('en-US', format));
+  jquery__WEBPACK_IMPORTED_MODULE_3___default()('#nextDayText').text(next.toLocaleString('en-US', format));
+
+  if (next.valueOf() > Object(_utils__WEBPACK_IMPORTED_MODULE_4__["today"])().valueOf()) {
+    jquery__WEBPACK_IMPORTED_MODULE_3___default()('#nextDayItem').addClass('disabled');
+  } else {
+    jquery__WEBPACK_IMPORTED_MODULE_3___default()('#nextDayItem').removeClass('disabled');
+  }
 }
 
 function processTaskData(data) {
@@ -11337,12 +11375,13 @@ function updateUserState(userInfo) {
 /*!**********************!*\
   !*** ./src/utils.js ***!
   \**********************/
-/*! exports provided: currentDateEpoch, currentHourLocal, makeAJAXSettings */
+/*! exports provided: today, toEpochSeconds, currentHourLocal, makeAJAXSettings */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "currentDateEpoch", function() { return currentDateEpoch; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "today", function() { return today; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toEpochSeconds", function() { return toEpochSeconds; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "currentHourLocal", function() { return currentHourLocal; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "makeAJAXSettings", function() { return makeAJAXSettings; });
 /* harmony import */ var js_cookie__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! js-cookie */ "./node_modules/js-cookie/src/js.cookie.js");
@@ -11352,10 +11391,15 @@ __webpack_require__.r(__webpack_exports__);
 // Handy tool for reading and writing cookies
  // Global configuration options
 
- // Get the epoch value for the current date without any time
+ // Get the current day
 
-function currentDateEpoch() {
-  var d = new Date().setUTCHours(0, 0, 0, 0);
+function today() {
+  var d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+} // Get the epoch value for the current date without any time
+
+function toEpochSeconds(d) {
   return d.valueOf() / 1000;
 } // Get the current hour in local time
 

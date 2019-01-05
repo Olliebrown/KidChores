@@ -11,10 +11,13 @@ import './index.css'
 import $ from 'jquery'
 
 // Import helper functions from other modules
-import { currentHourLocal } from './utils'
+import { today, toEpochSeconds, currentHourLocal } from './utils'
 import { retrieveCategorySchema } from './data'
 import { checkAndDecodeToken, makeNewUser, loginExistingUser,
   updateExistingUser, logoutUser, updateUserState } from './user'
+
+// Initialize the current date to today
+let currentDate = today()
 
 // ID used for the main Bootstrap accordion container
 const ACCORDION_ID = 'taskCategoriesAccordion'
@@ -31,6 +34,22 @@ $(document).ready(() => {
     updateUserState(userInfo)
     retrieveCategorySchema(processTaskData)
   })
+
+  // Setup date nav links
+  $('#prevDayLink').click((e) => {
+    e.preventDefault()
+    currentDate.setDate(currentDate.getDate() - 1)
+    updateDateNav()
+  })
+
+  $('#nextDayLink').click((e) => {
+    e.preventDefault()
+    currentDate.setDate(currentDate.getDate() + 1)
+    updateDateNav()
+  })
+
+  // Initialize the date values
+  updateDateNav()
 
   // Setup form callbacks
   $('#loginUserForm').on('submit', loginSubmit)
@@ -99,6 +118,24 @@ function newUserSubmit (event) {
 function updateUserSubmit (event) {
   event.preventDefault()
   updateExistingUser()
+}
+
+let format = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+function updateDateNav () {
+  let previous = new Date(currentDate)
+  let next = new Date(currentDate)
+  previous.setDate(previous.getDate() - 1)
+  next.setDate(next.getDate() + 1)
+
+  $('#prevDayText').text(previous.toLocaleString('en-US', format))
+  $('#curDayText').text(currentDate.toLocaleString('en-US', format))
+  $('#nextDayText').text(next.toLocaleString('en-US', format))
+
+  if (next.valueOf() > today().valueOf()) {
+    $('#nextDayItem').addClass('disabled')
+  } else {
+    $('#nextDayItem').removeClass('disabled')
+  }
 }
 
 function processTaskData (data) {

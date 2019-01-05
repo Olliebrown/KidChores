@@ -6,9 +6,15 @@ import Cookies from 'js-cookie'
 // Global configuration options
 import config from './config'
 
+// Get the current day
+export function today () {
+  let d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
 // Get the epoch value for the current date without any time
-export function currentDateEpoch () {
-  let d = new Date().setUTCHours(0, 0, 0, 0)
+export function toEpochSeconds (d) {
   return (d.valueOf() / 1000)
 }
 
