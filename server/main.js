@@ -1,6 +1,6 @@
 // Basic node libraries
-import http from 'http'
-import https from 'https'
+// import http from 'http'
+// import https from 'https'
 
 // Bring in express as our server
 import Express from 'express'
@@ -12,29 +12,33 @@ import config from './config'
 import dataRouter from './data_api'
 
 // Create a new express server
-const sslServer = new Express()
+const server = new Express()
 
 // Log all requests
-sslServer.use((req, res, next) => {
+server.use((req, res, next) => {
   console.info(`${req.method} at ${req.url}`)
   next()
 })
 
 // Attach the router for the data api
-sslServer.use('/data', dataRouter)
+server.use('/data', dataRouter)
 
 // Serve all other files in the public folder statically
-sslServer.use(Express.static('public'))
+server.use(Express.static('public'))
 
-// Create SSL backed server
-const sslOptions = {
-  key: config.SSLKey,
-  cert: config.SSLCertificate
-}
-
-https.createServer(sslOptions, sslServer).listen(config.port, config.host, () => {
+server.listen(config.port, config.host, () => {
   console.info(`Server listening on port ${config.port}`)
 })
+
+// Create SSL backed server
+// const sslOptions = {
+//   key: config.SSLKey,
+//   cert: config.SSLCertificate
+// }
+
+// https.createServer(sslOptions, sslServer).listen(config.port, config.host, () => {
+//   console.info(`Server listening on port ${config.port}`)
+// })
 
 // Create non-ssl redirection server
 // const server = new Express()
