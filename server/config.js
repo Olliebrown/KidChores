@@ -29,7 +29,7 @@ export default {
   },
   get SSLCertificate () {
     if (this.HEROKU) {
-      return env.SSL_CERT_KEY
+      return env.SSL_CERT
     } else {
       return fs.readFileSync('./server/ssl.cert')
     }
