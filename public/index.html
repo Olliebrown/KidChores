@@ -26,6 +26,9 @@
             <li class="nav-item" id="navNewUser" hidden>
               <a id="newUserLink" class="nav-link" href="#">Create New User</a>
             </li>
+            <li class="nav-item" id="navUpdateUser" hidden>
+              <a id="updateUserLink" class="nav-link" href="#">Update Existing User</a>
+            </li>
             <li class="nav-item" id="navLogout" hidden>
               <a id="logoutLink" class="nav-link" href="#">Logout</a>
             </li>
@@ -51,7 +54,7 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                  <label for="inputUserName" class="sr-only">User Name</label>
+                  <label for="inputUserName" class="sr-only">Username</label>
                   <input type="text" class="form-control" id="inputUserName" placeholder="Username" required>
                 </div>
                 <div class="form-group">
@@ -112,6 +115,55 @@
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
               <button type="submit" class="btn btn-primary">Create User</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Update User Modal -->
+    <div class="modal fade" id="updateUserModel" tabindex="-1" role="dialog" aria-labelledby="updateUserModelTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <form id="updateUserForm">
+            <div class="modal-header">
+              <h5 class="modal-title">Update Existing User</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <h4>Current Details:</h4>
+              <div class="form-group">
+                <label for="inputUserNameUpdate" class="sr-only">Username</label>
+                <input type="text" class="form-control" id="inputUserNameUpdate" placeholder="Username" required>
+              </div>
+              <div class="form-group">
+                <label for="inputCurrentPasswordUpdate" class="sr-only">Current Password</label>
+                <input type="password" class="form-control" id="inputCurrentPasswordUpdate" placeholder="Current Password" required>
+              </div>
+              <hr>
+              <h4>Update Details:</h4>
+              <div class="form-group">
+                <label for="inputFirstNameUpdate" class="sr-only">New First Name</label>
+                <input type="text" class="form-control" id="inputFirstNameUpdate" placeholder="New First name">
+              </div>
+              <div class="form-group">
+                <label for="inputLastNameUpdate" class="sr-only">New Last Name</label>
+                <input type="text" class="form-control" id="inputLastNameUpdate" placeholder="New Last name">
+              </div>
+              <div class="form-group">
+                <label for="inputNewPasswordUpdate" class="sr-only">New Password</label>
+                <input type="password" class="form-control" id="inputNewPasswordUpdate" placeholder="New Password">
+              </div>
+              <div class="form-group">
+                <label for="inputNewPasswordVerifyUpdate" class="sr-only">Verify New Password</label>
+                <input type="password" class="form-control" id="inputNewPasswordVerifyUpdate" placeholder="Verify New Password">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Update User</button>
             </div>
           </form>
         </div>

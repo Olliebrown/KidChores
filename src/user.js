@@ -33,6 +33,23 @@ function checkToken () {
   })
 }
 
+// Query a username to see if it exists in the DB already
+function queryUsername (username) {
+  return new Promise((resolve, reject) => {
+    let AJAXSettings = makeAJAXSettings(
+      `/data/checkuser/${username}`,
+      (user) => {
+        if (user.username) {
+          reject(new Error('User name already exists'))
+        } else {
+          resolve()
+        }
+      }
+    )
+    $.get(AJAXSettings)
+  })
+}
+
 // Validate a username and password for authentication
 function validateUser (username, password) {
   return new Promise((resolve, reject) => {
@@ -60,26 +77,15 @@ function validateUser (username, password) {
   })
 }
 
-// Query a username to see if it exists in the DB already
-function queryUsername (username) {
-  return new Promise((resolve, reject) => {
-    let AJAXSettings = makeAJAXSettings(
-      `/data/checkuser/${username}`,
-      (user) => {
-        if (user.username) {
-          reject(new Error('User name already exists'))
-        } else {
-          resolve()
-        }
-      }
-    )
-    $.get(AJAXSettings)
-  })
-}
-
 // Add a user with the given username and passsword hash
-function addUser (firstName, lastName, username, usertype, password) {
+function addUser (username, firstname, lastname, usertype, password) {
   return new Promise((resolve, reject) => {
+    // Do not proceed if not using a secure protocol
+    // (we are about to send a password!!)
+    if (!__DEV__ && window.location.protocol !== 'https:') {
+      reject(new Error('Must use secure protocol to create new users'))
+    }
+
     let AJAXSettings = makeAJAXSettings(
       '/data/newuser/',
       (response) => {
@@ -89,7 +95,32 @@ function addUser (firstName, lastName, username, usertype, password) {
           resolve()
         }
       },
-      { firstName, lastName, username, usertype, password }
+      { firstname, lastname, username, usertype, password }
+    )
+
+    $.post(AJAXSettings)
+  })
+}
+
+// Add a user with the given username and passsword hash
+function updateUserDetails (username, firstname, lastname, oldpassword, newpassword) {
+  return new Promise((resolve, reject) => {
+    // Do not proceed if not using a secure protocol
+    // (we are about to send a password!!)
+    if (!__DEV__ && window.location.protocol !== 'https:') {
+      reject(new Error('Must use secure protocol to update a user'))
+    }
+
+    let AJAXSettings = makeAJAXSettings(
+      '/data/updateuser/',
+      (response) => {
+        if (response.error) {
+          reject(new Error(`Failed to update user - ${response.error}`))
+        } else {
+          resolve()
+        }
+      },
+      { username, firstname, lastname, oldpassword, newpassword }
     )
 
     $.post(AJAXSettings)
@@ -104,15 +135,44 @@ export async function makeNewUser () {
     await queryUsername(username)
 
     // Get other info, hash the password, and send to server
-    let firstName = $('#inputFirstName').val()
-    let lastName = $('#inputLastName').val()
+    let firstname = $('#inputFirstName').val()
+    let lastname = $('#inputLastName').val()
     let usertype = $("input[name='usertype']:checked").val() || 'child'
     let password = $('#inputNewPassword').val()
-    await addUser(firstName, lastName, username, usertype, password)
+    await addUser(username, firstname, lastname, usertype, password)
 
     // Signal success and hide the modal
     alert('New user successfully created')
     $('#newUserModel').modal('hide')
+    $('#newUserForm')[0].reset()
+  } catch (err) {
+    alert(`${err}`)
+  }
+}
+
+// Update existing user first/last name or password
+export async function updateExistingUser () {
+  try {
+    // Validate old password and retrieve user details
+    let username = $('#inputUserNameUpdate').val()
+    let oldPassword = $('#inputCurrentPasswordUpdate').val()
+    let oldUserDetails = await validateUser(username, oldPassword)
+
+    // Get other info, defaulting to old values if not provided
+    let firstname = $('#inputFirstNameUpdate').val() || oldUserDetails.firstname
+    let lastname = $('#inputLastNameUpdate').val() || oldUserDetails.lastname
+    let newPassword = $('#inputNewPasswordUpdate').val()
+
+    // avoid empty string password
+    if (!newPassword) { newPassword = undefined }
+
+    // Pass new data to the data api
+    await updateUserDetails(username, firstname, lastname, oldPassword, newPassword)
+
+    // Signal success and hide the modal
+    alert('User details successfully updated')
+    $('#updateUserModel').modal('hide')
+    $('#updateUserForm')[0].reset()
   } catch (err) {
     alert(`${err}`)
   }
@@ -137,6 +197,7 @@ export async function loginExistingUser () {
     // Update with given user info and hide the modal
     updateUserState(result)
     $('#loginModal').modal('hide')
+    $('#loginUserForm')[0].reset()
     return result
   } catch (err) {
     alert(`${err}`)
@@ -166,13 +227,16 @@ export function updateUserState (userInfo) {
     $('#navLogout').removeAttr('hidden')
     if (userInfo.usertype === 'parent') {
       $('#navNewUser').removeAttr('hidden')
+      $('#navUpdateUser').removeAttr('hidden')
     } else {
       $('#navNewUser').attr('hidden', '')
+      $('#navUpdateUser').attr('hidden', '')
     }
   } else {
     $('#navLogin').removeAttr('hidden')
     $('#navUsername').attr('hidden', '')
     $('#navNewUser').attr('hidden', '')
+    $('#navUpdateUser').attr('hidden', '')
     $('#navLogout').attr('hidden', '')
   }
 }

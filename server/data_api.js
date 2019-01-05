@@ -22,7 +22,7 @@ dataRouter.get('/checkuser/:username', async (req, res) => {
   if (user.error) {
     res.json({ error: user.error })
   } else {
-    res.json({ username: user.username, firstName: user.firstName, lastName: user.lastName })
+    res.json({ id: user.id, username: user.username, firstname: user.firstname, lastname: user.lastname })
   }
 })
 
@@ -46,7 +46,7 @@ dataRouter.post('/authorize', async (req, res) => {
       } else {
         let token = JWT.createToken(user.username, user.usertype, '1w', { firstname: user.firstname })
         let issued = new Date().valueOf()
-        DB.updateUser(user.username, token, issued)
+        DB.updateUserToken(user.username, token, issued)
         user.success = true
         user.token = token
         user.tokenissued = issued
@@ -60,13 +60,43 @@ dataRouter.post('/authorize', async (req, res) => {
 // NOTE: User must be logged in for the rest of the routes below to work
 
 // Make a new user with the given information
-dataRouter.post('/newuser/', authorizer, async (req, res) => {
+dataRouter.post('/newuser', authorizer, async (req, res) => {
   if (req.user.usertype !== 'parent') {
     res.status(403).json({ error: 'Not privledged' })
   } else {
     let pwhash = bcrypt.hashSync(req.body.password, 10)
     let result = await DB.createUser(req.body.firstName, req.body.lastName, req.body.username, req.body.usertype, pwhash)
     res.json(result)
+  }
+})
+
+// Update an existing user with the given information
+dataRouter.post('/updateuser', authorizer, async (req, res) => {
+  if (req.user.usertype !== 'parent') {
+    res.status(403).json({ error: 'Not privledged' })
+  } else {
+    // First, retrieve the old user
+    let user = await DB.retrieveUserJSONObject(req.body.username)
+    if (user.error) {
+      res.json({ success: false, error: user.error })
+    } else {
+      // Second, verify the old password
+      if (!bcrypt.compareSync(req.body.oldpassword, user.passwordhash)) {
+        res.json({ success: false, error: 'Incorrect username or old password' })
+      } else {
+        // Third, send the user details first
+        let result = await DB.updateUserDetails(req.body.username, req.body.firstname, req.body.lastname)
+
+        // Last, update the password if it was provided
+        if (req.body.newpassword) {
+          let pwhash = bcrypt.hashSync(req.body.newpassword, 10)
+          await DB.updateUserDetails(req.body.username, pwhash)
+        }
+
+        // Respond with the results of the details udpate
+        res.json(result)
+      }
+    }
   }
 })
 

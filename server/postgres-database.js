@@ -23,7 +23,9 @@ let db
 
 // Data Query SQL
 const sqlGetUser = `SELECT * FROM users WHERE username = $1`
-const sqlUpdateUser = `UPDATE users SET token = $2, tokenissued = $3 WHERE username = $1`
+const sqlUpdateUserToken = `UPDATE users SET token = $2, tokenissued = $3 WHERE username = $1`
+const sqlUpdateUserDetails = `UPDATE users SET firstname = $2, lastname = $3 WHERE username = $1`
+const sqlUpdateUserPassword = `UPDATE users SET passwordhash = $4 WHERE username = $1`
 const sqlNewUser = `INSERT INTO users (firstname, lastname, username, usertype, passwordhash) VALUES ($1, $2, $3, $4, $5)`
 const sqlCategories = `SELECT * FROM categories`
 const sqlTasks = `SELECT * FROM tasks WHERE categoryid = $1`
@@ -47,12 +49,38 @@ function getUserDB (username) {
   })
 }
 
-// Promisify a query to update a user
-function updateUserDB (username, JWToken, JWTIssueEpoch) {
+// Promisify a query to update a user's token
+function updateUserTokenDB (username, JWToken, JWTIssueEpoch) {
   return new Promise((resolve, reject) => {
-    db.query(sqlUpdateUser, [username, JWToken, JWTIssueEpoch], (err, res) => {
+    db.query(sqlUpdateUserToken, [username, JWToken, JWTIssueEpoch], (err, res) => {
       if (err) {
-        reject(new Error(`User update query Error: ${err}`))
+        reject(new Error(`User update token query Error: ${err}`))
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+// Promisify a query to update a user's details
+function updateUserDetailsDB (username, firstname, lastname) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlUpdateUserDetails, [username, firstname, lastname], (err, res) => {
+      if (err) {
+        reject(new Error(`User update details query Error: ${err}`))
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+// Promisify a query to update a user's password
+function updateUserPasswordDB (username, pwhash) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlUpdateUserPassword, [username, pwhash], (err, res) => {
+      if (err) {
+        reject(new Error(`User update passowrd query Error: ${err}`))
       } else {
         resolve()
       }
@@ -179,9 +207,27 @@ async function retrieveUserJSONObject (username) {
   }
 }
 
-async function updateUser (username, JWToken, JWTIssueEpoch) {
+async function updateUserToken (username, JWToken, JWTIssueEpoch) {
   try {
-    await updateUserDB(username, JWToken, JWTIssueEpoch)
+    await updateUserTokenDB(username, JWToken, JWTIssueEpoch)
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: err }
+  }
+}
+
+async function updateUserDetails (username, firstname, lastname) {
+  try {
+    await updateUserDetailsDB(username, firstname, lastname)
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: err }
+  }
+}
+
+async function updateUserPassword (username, pwhash) {
+  try {
+    await updateUserPasswordDB(username, pwhash)
     return { success: true }
   } catch (err) {
     return { success: false, error: err }
@@ -218,8 +264,10 @@ async function retrieveCategoryJSONObject () {
 }
 
 export default {
-  retrieveUserJSONObject,
   createUser,
-  updateUser,
+  updateUserToken,
+  updateUserDetails,
+  updateUserPassword,
+  retrieveUserJSONObject,
   retrieveCategoryJSONObject
 }

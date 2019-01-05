@@ -13,7 +13,8 @@ import $ from 'jquery'
 // Import helper functions from other modules
 import { currentHourLocal } from './utils'
 import { retrieveCategorySchema } from './data'
-import { checkAndDecodeToken, makeNewUser, loginExistingUser, logoutUser, updateUserState } from './user'
+import { checkAndDecodeToken, makeNewUser, loginExistingUser,
+  updateExistingUser, logoutUser, updateUserState } from './user'
 
 // ID used for the main Bootstrap accordion container
 const ACCORDION_ID = 'taskCategoriesAccordion'
@@ -26,7 +27,6 @@ let userInfo = null
 $(document).ready(() => {
   // Get information about the user
   checkAndDecodeToken().then((data) => {
-    console.log(JSON.stringify(data, null, 2))
     userInfo = data
     updateUserState(userInfo)
     retrieveCategorySchema(processTaskData)
@@ -35,6 +35,7 @@ $(document).ready(() => {
   // Setup form callbacks
   $('#loginUserForm').on('submit', loginSubmit)
   $('#newUserForm').on('submit', newUserSubmit)
+  $('#updateUserForm').on('submit', updateUserSubmit)
 
   // Setup modal links
   $('#loginLink').click((event) => {
@@ -55,9 +56,24 @@ $(document).ready(() => {
     $('#newUserModel').modal('show')
   })
 
+  $('#updateUserLink').click((event) => {
+    event.preventDefault()
+    $('#updateUserModel').modal('show')
+  })
+
   // Set custom validity check for input field
   $('#inputPasswordVerify').on('input', (e) => {
     if ($('#inputNewPassword').val() !== $('#inputPasswordVerify').val()) {
+      alert('Passwords do not match')
+      e.target.setCustomValidity('Passwords do not match')
+    } else {
+      e.target.setCustomValidity('')
+    }
+  })
+
+  $('#inputNewPasswordVerifyUpdate').on('input', (e) => {
+    if ($('#inputNewPasswordUpdate').val() !== $('#inputNewPasswordVerifyUpdate').val()) {
+      alert('New passwords do not match')
       e.target.setCustomValidity('Passwords do not match')
     } else {
       e.target.setCustomValidity('')
@@ -78,6 +94,11 @@ function loginSubmit (event) {
 function newUserSubmit (event) {
   event.preventDefault()
   makeNewUser()
+}
+
+function updateUserSubmit (event) {
+  event.preventDefault()
+  updateExistingUser()
 }
 
 function processTaskData (data) {

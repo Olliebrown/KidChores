@@ -10755,14 +10755,14 @@ var userInfo = null; // Runs when the document is fully loaded and the DOM is re
 jquery__WEBPACK_IMPORTED_MODULE_3___default()(document).ready(function () {
   // Get information about the user
   Object(_user__WEBPACK_IMPORTED_MODULE_6__["checkAndDecodeToken"])().then(function (data) {
-    console.log(JSON.stringify(data, null, 2));
     userInfo = data;
     Object(_user__WEBPACK_IMPORTED_MODULE_6__["updateUserState"])(userInfo);
     Object(_data__WEBPACK_IMPORTED_MODULE_5__["retrieveCategorySchema"])(processTaskData);
   }); // Setup form callbacks
 
   jquery__WEBPACK_IMPORTED_MODULE_3___default()('#loginUserForm').on('submit', loginSubmit);
-  jquery__WEBPACK_IMPORTED_MODULE_3___default()('#newUserForm').on('submit', newUserSubmit); // Setup modal links
+  jquery__WEBPACK_IMPORTED_MODULE_3___default()('#newUserForm').on('submit', newUserSubmit);
+  jquery__WEBPACK_IMPORTED_MODULE_3___default()('#updateUserForm').on('submit', updateUserSubmit); // Setup modal links
 
   jquery__WEBPACK_IMPORTED_MODULE_3___default()('#loginLink').click(function (event) {
     event.preventDefault();
@@ -10778,10 +10778,23 @@ jquery__WEBPACK_IMPORTED_MODULE_3___default()(document).ready(function () {
   jquery__WEBPACK_IMPORTED_MODULE_3___default()('#newUserLink').click(function (event) {
     event.preventDefault();
     jquery__WEBPACK_IMPORTED_MODULE_3___default()('#newUserModel').modal('show');
+  });
+  jquery__WEBPACK_IMPORTED_MODULE_3___default()('#updateUserLink').click(function (event) {
+    event.preventDefault();
+    jquery__WEBPACK_IMPORTED_MODULE_3___default()('#updateUserModel').modal('show');
   }); // Set custom validity check for input field
 
   jquery__WEBPACK_IMPORTED_MODULE_3___default()('#inputPasswordVerify').on('input', function (e) {
     if (jquery__WEBPACK_IMPORTED_MODULE_3___default()('#inputNewPassword').val() !== jquery__WEBPACK_IMPORTED_MODULE_3___default()('#inputPasswordVerify').val()) {
+      alert('Passwords do not match');
+      e.target.setCustomValidity('Passwords do not match');
+    } else {
+      e.target.setCustomValidity('');
+    }
+  });
+  jquery__WEBPACK_IMPORTED_MODULE_3___default()('#inputNewPasswordVerifyUpdate').on('input', function (e) {
+    if (jquery__WEBPACK_IMPORTED_MODULE_3___default()('#inputNewPasswordUpdate').val() !== jquery__WEBPACK_IMPORTED_MODULE_3___default()('#inputNewPasswordVerifyUpdate').val()) {
+      alert('New passwords do not match');
       e.target.setCustomValidity('Passwords do not match');
     } else {
       e.target.setCustomValidity('');
@@ -10802,6 +10815,11 @@ function loginSubmit(event) {
 function newUserSubmit(event) {
   event.preventDefault();
   Object(_user__WEBPACK_IMPORTED_MODULE_6__["makeNewUser"])();
+}
+
+function updateUserSubmit(event) {
+  event.preventDefault();
+  Object(_user__WEBPACK_IMPORTED_MODULE_6__["updateExistingUser"])();
 }
 
 function processTaskData(data) {
@@ -10953,12 +10971,13 @@ function buildCard(cardData, catID) {
 /*!*********************!*\
   !*** ./src/user.js ***!
   \*********************/
-/*! exports provided: makeNewUser, loginExistingUser, checkAndDecodeToken, logoutUser, updateUserState */
+/*! exports provided: makeNewUser, updateExistingUser, loginExistingUser, checkAndDecodeToken, logoutUser, updateUserState */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "makeNewUser", function() { return makeNewUser; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updateExistingUser", function() { return updateExistingUser; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "loginExistingUser", function() { return loginExistingUser; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "checkAndDecodeToken", function() { return checkAndDecodeToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "logoutUser", function() { return logoutUser; });
@@ -10999,6 +11018,20 @@ function checkToken() {
       jquery__WEBPACK_IMPORTED_MODULE_0___default.a.post(AJAXSettings);
     }
   });
+} // Query a username to see if it exists in the DB already
+
+
+function queryUsername(username) {
+  return new Promise(function (resolve, reject) {
+    var AJAXSettings = Object(_utils__WEBPACK_IMPORTED_MODULE_3__["makeAJAXSettings"])("/data/checkuser/".concat(username), function (user) {
+      if (user.username) {
+        reject(new Error('User name already exists'));
+      } else {
+        resolve();
+      }
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_0___default.a.get(AJAXSettings);
+  });
 } // Validate a username and password for authentication
 
 
@@ -11022,25 +11055,15 @@ function validateUser(username, password) {
 
     jquery__WEBPACK_IMPORTED_MODULE_0___default.a.post(AJAXSettings);
   });
-} // Query a username to see if it exists in the DB already
-
-
-function queryUsername(username) {
-  return new Promise(function (resolve, reject) {
-    var AJAXSettings = Object(_utils__WEBPACK_IMPORTED_MODULE_3__["makeAJAXSettings"])("/data/checkuser/".concat(username), function (user) {
-      if (user.username) {
-        reject(new Error('User name already exists'));
-      } else {
-        resolve();
-      }
-    });
-    jquery__WEBPACK_IMPORTED_MODULE_0___default.a.get(AJAXSettings);
-  });
 } // Add a user with the given username and passsword hash
 
 
-function addUser(firstName, lastName, username, usertype, password) {
+function addUser(username, firstname, lastname, usertype, password) {
   return new Promise(function (resolve, reject) {
+    // Do not proceed if not using a secure protocol
+    // (we are about to send a password!!)
+    if (false) {}
+
     var AJAXSettings = Object(_utils__WEBPACK_IMPORTED_MODULE_3__["makeAJAXSettings"])('/data/newuser/', function (response) {
       if (response.error) {
         reject(new Error("Failed to create user - ".concat(response.error)));
@@ -11048,11 +11071,35 @@ function addUser(firstName, lastName, username, usertype, password) {
         resolve();
       }
     }, {
-      firstName: firstName,
-      lastName: lastName,
+      firstname: firstname,
+      lastname: lastname,
       username: username,
       usertype: usertype,
       password: password
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_0___default.a.post(AJAXSettings);
+  });
+} // Add a user with the given username and passsword hash
+
+
+function updateUserDetails(username, firstname, lastname, oldpassword, newpassword) {
+  return new Promise(function (resolve, reject) {
+    // Do not proceed if not using a secure protocol
+    // (we are about to send a password!!)
+    if (false) {}
+
+    var AJAXSettings = Object(_utils__WEBPACK_IMPORTED_MODULE_3__["makeAJAXSettings"])('/data/updateuser/', function (response) {
+      if (response.error) {
+        reject(new Error("Failed to update user - ".concat(response.error)));
+      } else {
+        resolve();
+      }
+    }, {
+      username: username,
+      firstname: firstname,
+      lastname: lastname,
+      oldpassword: oldpassword,
+      newpassword: newpassword
     });
     jquery__WEBPACK_IMPORTED_MODULE_0___default.a.post(AJAXSettings);
   });
@@ -11061,13 +11108,13 @@ function addUser(firstName, lastName, username, usertype, password) {
 
 function makeNewUser() {
   return _makeNewUser.apply(this, arguments);
-} // Function that runs when the login form is submitted
+} // Update existing user first/last name or password
 
 function _makeNewUser() {
   _makeNewUser = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee() {
-    var username, firstName, lastName, usertype, password;
+    var username, firstname, lastname, usertype, password;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
@@ -11079,33 +11126,92 @@ function _makeNewUser() {
 
           case 4:
             // Get other info, hash the password, and send to server
-            firstName = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputFirstName').val();
-            lastName = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputLastName').val();
+            firstname = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputFirstName').val();
+            lastname = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputLastName').val();
             usertype = jquery__WEBPACK_IMPORTED_MODULE_0___default()("input[name='usertype']:checked").val() || 'child';
             password = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputNewPassword').val();
             _context.next = 10;
-            return addUser(firstName, lastName, username, usertype, password);
+            return addUser(username, firstname, lastname, usertype, password);
 
           case 10:
             // Signal success and hide the modal
             alert('New user successfully created');
             jquery__WEBPACK_IMPORTED_MODULE_0___default()('#newUserModel').modal('hide');
-            _context.next = 17;
+            jquery__WEBPACK_IMPORTED_MODULE_0___default()('#newUserForm')[0].reset();
+            _context.next = 18;
             break;
 
-          case 14:
-            _context.prev = 14;
+          case 15:
+            _context.prev = 15;
             _context.t0 = _context["catch"](0);
             alert("".concat(_context.t0));
 
-          case 17:
+          case 18:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, this, [[0, 14]]);
+    }, _callee, this, [[0, 15]]);
   }));
   return _makeNewUser.apply(this, arguments);
+}
+
+function updateExistingUser() {
+  return _updateExistingUser.apply(this, arguments);
+} // Function that runs when the login form is submitted
+
+function _updateExistingUser() {
+  _updateExistingUser = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee2() {
+    var username, oldPassword, oldUserDetails, firstname, lastname, newPassword;
+    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            _context2.prev = 0;
+            // Validate old password and retrieve user details
+            username = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputUserNameUpdate').val();
+            oldPassword = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputCurrentPasswordUpdate').val();
+            _context2.next = 5;
+            return validateUser(username, oldPassword);
+
+          case 5:
+            oldUserDetails = _context2.sent;
+            // Get other info, defaulting to old values if not provided
+            firstname = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputFirstNameUpdate').val() || oldUserDetails.firstname;
+            lastname = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputLastNameUpdate').val() || oldUserDetails.lastname;
+            newPassword = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputNewPasswordUpdate').val(); // avoid empty string password
+
+            if (!newPassword) {
+              newPassword = undefined;
+            } // Pass new data to the data api
+
+
+            _context2.next = 12;
+            return updateUserDetails(username, firstname, lastname, oldPassword, newPassword);
+
+          case 12:
+            // Signal success and hide the modal
+            alert('User details successfully updated');
+            jquery__WEBPACK_IMPORTED_MODULE_0___default()('#updateUserModel').modal('hide');
+            jquery__WEBPACK_IMPORTED_MODULE_0___default()('#updateUserForm')[0].reset();
+            _context2.next = 20;
+            break;
+
+          case 17:
+            _context2.prev = 17;
+            _context2.t0 = _context2["catch"](0);
+            alert("".concat(_context2.t0));
+
+          case 20:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2, this, [[0, 17]]);
+  }));
+  return _updateExistingUser.apply(this, arguments);
 }
 
 function loginExistingUser() {
@@ -11115,22 +11221,22 @@ function loginExistingUser() {
 function _loginExistingUser() {
   _loginExistingUser = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee2() {
+  regeneratorRuntime.mark(function _callee3() {
     var username, password, result;
-    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
-        switch (_context2.prev = _context2.next) {
+        switch (_context3.prev = _context3.next) {
           case 0:
-            _context2.prev = 0;
+            _context3.prev = 0;
             // Grab username and hash the password
             username = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputUserName').val();
             password = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#inputPassword').val(); // Submit to server for verification
 
-            _context2.next = 5;
+            _context3.next = 5;
             return validateUser(username, password);
 
           case 5:
-            result = _context2.sent;
+            result = _context3.sent;
 
             // Save the authorization token if included
             if (result.token) {
@@ -11142,19 +11248,20 @@ function _loginExistingUser() {
 
             updateUserState(result);
             jquery__WEBPACK_IMPORTED_MODULE_0___default()('#loginModal').modal('hide');
-            return _context2.abrupt("return", result);
+            jquery__WEBPACK_IMPORTED_MODULE_0___default()('#loginUserForm')[0].reset();
+            return _context3.abrupt("return", result);
 
-          case 12:
-            _context2.prev = 12;
-            _context2.t0 = _context2["catch"](0);
-            alert("".concat(_context2.t0));
+          case 13:
+            _context3.prev = 13;
+            _context3.t0 = _context3["catch"](0);
+            alert("".concat(_context3.t0));
 
-          case 15:
+          case 16:
           case "end":
-            return _context2.stop();
+            return _context3.stop();
         }
       }
-    }, _callee2, this, [[0, 12]]);
+    }, _callee3, this, [[0, 13]]);
   }));
   return _loginExistingUser.apply(this, arguments);
 }
@@ -11166,31 +11273,31 @@ function checkAndDecodeToken() {
 function _checkAndDecodeToken() {
   _checkAndDecodeToken = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee3() {
+  regeneratorRuntime.mark(function _callee4() {
     var decoded;
-    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+    return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
-        switch (_context3.prev = _context3.next) {
+        switch (_context4.prev = _context4.next) {
           case 0:
-            _context3.prev = 0;
-            _context3.next = 3;
+            _context4.prev = 0;
+            _context4.next = 3;
             return checkToken();
 
           case 3:
-            decoded = _context3.sent;
-            return _context3.abrupt("return", decoded);
+            decoded = _context4.sent;
+            return _context4.abrupt("return", decoded);
 
           case 7:
-            _context3.prev = 7;
-            _context3.t0 = _context3["catch"](0);
-            return _context3.abrupt("return", undefined);
+            _context4.prev = 7;
+            _context4.t0 = _context4["catch"](0);
+            return _context4.abrupt("return", undefined);
 
           case 10:
           case "end":
-            return _context3.stop();
+            return _context4.stop();
         }
       }
-    }, _callee3, this, [[0, 7]]);
+    }, _callee4, this, [[0, 7]]);
   }));
   return _checkAndDecodeToken.apply(this, arguments);
 }
@@ -11210,13 +11317,16 @@ function updateUserState(userInfo) {
 
     if (userInfo.usertype === 'parent') {
       jquery__WEBPACK_IMPORTED_MODULE_0___default()('#navNewUser').removeAttr('hidden');
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()('#navUpdateUser').removeAttr('hidden');
     } else {
       jquery__WEBPACK_IMPORTED_MODULE_0___default()('#navNewUser').attr('hidden', '');
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()('#navUpdateUser').attr('hidden', '');
     }
   } else {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()('#navLogin').removeAttr('hidden');
     jquery__WEBPACK_IMPORTED_MODULE_0___default()('#navUsername').attr('hidden', '');
     jquery__WEBPACK_IMPORTED_MODULE_0___default()('#navNewUser').attr('hidden', '');
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()('#navUpdateUser').attr('hidden', '');
     jquery__WEBPACK_IMPORTED_MODULE_0___default()('#navLogout').attr('hidden', '');
   }
 }
