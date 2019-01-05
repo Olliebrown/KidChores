@@ -10,6 +10,8 @@ public/*.js.map
 .DS_Store
 
 # Cryptographic secrets don't belong in a public repo!!
+profberrier.com-ssl-bundle
+*.pem
 *.key
 *.pub
 *.cert

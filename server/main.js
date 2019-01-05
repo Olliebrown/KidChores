@@ -32,7 +32,7 @@ const sslOptions = {
   cert: config.SSLCertificate
 }
 
-http.createServer(sslOptions, sslServer).listen(config.port, config.host, () => {
+https.createServer(sslOptions, sslServer).listen(config.port, config.host, () => {
   console.info(`Server listening on port ${config.port}`)
 })
 
