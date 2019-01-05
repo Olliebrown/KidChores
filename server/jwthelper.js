@@ -13,8 +13,8 @@ let publicKEY = config.JWTPublicKey
 function createToken (username, usertype, expiresIn = '1w', extraPayload) {
   // Set the standard options
   let tokenOptions = {
+    algorithm: 'RS256',
     subject: username,
-    usertype: usertype,
     issuer: config.JWTOptions.issuer,
     audience: config.JWTOptions.audience,
     expiresIn: expiresIn
@@ -22,6 +22,7 @@ function createToken (username, usertype, expiresIn = '1w', extraPayload) {
 
   // Default to an empty payload
   extraPayload = extraPayload || {}
+  extraPayload.usertype = usertype
 
   // Try and create the token
   try {
@@ -36,7 +37,8 @@ function createToken (username, usertype, expiresIn = '1w', extraPayload) {
 function validateToken (token) {
   let decoded = {}
   try {
-    let decoded = jwt.verify(token, publicKEY)
+    decoded = jwt.verify(token, publicKEY)
+    decoded.username = decoded.sub
     decoded.signatureValid = true
   } catch (err) {
     decoded.signatureValid = false

@@ -13,27 +13,41 @@ import $ from 'jquery'
 // Import helper functions from other modules
 import { currentHourLocal } from './utils'
 import { retrieveCategorySchema } from './data'
-import { makeNewUser, loginExistingUser } from './user'
+import { checkAndDecodeToken, makeNewUser, loginExistingUser, logoutUser, updateUserState } from './user'
 
 // ID used for the main Bootstrap accordion container
 const ACCORDION_ID = 'taskCategoriesAccordion'
 
 // Identifies the default collapse category while constructing the task matrix
 let DEFAULT_COLLAPSE = null
+let userInfo = null
 
 // Runs when the document is fully loaded and the DOM is ready
 $(document).ready(() => {
-  // Get the task category data and build the task matrix from it
-  retrieveCategorySchema(processTaskData)
+  // Get information about the user
+  checkAndDecodeToken().then((data) => {
+    console.log(JSON.stringify(data, null, 2))
+    userInfo = data
+    updateUserState(userInfo)
+    retrieveCategorySchema(processTaskData)
+  })
 
   // Setup form callbacks
-  $('#loginUserForm').on('submit', loginExistingUser)
-  $('#newUserForm').on('submit', makeNewUser)
+  $('#loginUserForm').on('submit', loginSubmit)
+  $('#newUserForm').on('submit', newUserSubmit)
 
   // Setup modal links
   $('#loginLink').click((event) => {
     event.preventDefault()
     $('#loginModal').modal('show')
+  })
+
+  $('#logoutLink').click((event) => {
+    event.preventDefault()
+    logoutUser()
+    userInfo = undefined
+    updateUserState(userInfo)
+    retrieveCategorySchema(processTaskData)
   })
 
   $('#newUserLink').click((event) => {
@@ -44,24 +58,37 @@ $(document).ready(() => {
   // Set custom validity check for input field
   $('#inputPasswordVerify').on('input', (e) => {
     if ($('#inputNewPassword').val() !== $('#inputPasswordVerify').val()) {
-      console.log('not valid')
       e.target.setCustomValidity('Passwords do not match')
     } else {
-      console.log('VALID')
       e.target.setCustomValidity('')
     }
   })
 })
 
+function loginSubmit (event) {
+  event.preventDefault()
+  loginExistingUser().then((loginInfo) => {
+    if (loginInfo) {
+      userInfo = loginInfo
+      retrieveCategorySchema(processTaskData)
+    }
+  })
+}
+
+function newUserSubmit (event) {
+  event.preventDefault()
+  makeNewUser()
+}
+
 function processTaskData (data) {
+  // Clear the category list container first
+  $('#category-list').empty()
+  
   // Check if we were properly authorized
   if (data.unauthorized) {
     let loginMessage = $('<h5/>').addClass('text-center m-3').text('Please login (click login in the nav bar)')
     $('#category-list').append(loginMessage)
   } else {
-    // Clear the category list container first
-    $('#category-list').empty()
-
     // Create the task matrix accordion and append it to our main content area
     let taskMatrix = buildTaskMatrix(data)
     if (taskMatrix != null) {

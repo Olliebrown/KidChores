@@ -25,7 +25,7 @@ export default {
       console.log(env.SSL_CERT_KEY)
       return env.SSL_CERT_KEY
     } else {
-      return fs.readFileSync('./server/ssl.key')
+      return fs.readFileSync('./server/ssl.key', 'utf8')
     }
   },
   get SSLCertificate () {
@@ -33,7 +33,7 @@ export default {
       console.log(env.SSL_CERT)
       return env.SSL_CERT
     } else {
-      return fs.readFileSync('./server/ssl.cert')
+      return fs.readFileSync('./server/ssl.cert', 'utf8')
     }
   },
 
@@ -42,14 +42,14 @@ export default {
     if (this.HEROKU) {
       return env.JWT_PUBLIC_KEY
     } else {
-      return fs.readFileSync('./server/jwt_rsa.pub')
+      return fs.readFileSync('./server/jwt_rsa.pub', 'utf8')
     }
   },
   get JWTPrivateKey () {
     if (this.HEROKU) {
       return env.JWT_PRIVATE_KEY
     } else {
-      return fs.readFileSync('./server/jwt_rsa.key')
+      return fs.readFileSync('./server/jwt_rsa.key', 'utf8')
     }
   },
   JWTOptions: {

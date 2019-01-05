@@ -6,11 +6,11 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
 	id SERIAL PRIMARY KEY,
 	username TEXT NOT NULL,
-	passwordhash BYTEA NOT NULL,
+	passwordhash TEXT NOT NULL,
   usertype TEXT DEFAULT 'child' NOT NULL,  
   firstname TEXT,
   lastname TEXT,
-  token BYTEA,
+  token TEXT,
   tokenissued INTEGER DEFAULT 0
 );
 ALTER SEQUENCE users_id_seq RESTART WITH 1;

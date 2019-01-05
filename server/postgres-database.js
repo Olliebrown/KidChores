@@ -16,13 +16,14 @@ let db
   if (!isValid) {
     console.log('Database does not match schema!! Consider rebuilding')
   } else {
-    console.log('Dabase is valid')
+    console.log('Database is valid')
   }
 })()
 
 // Data Query SQL
 const sqlGetUser = `SELECT * FROM users WHERE username = $1`
-const sqlNewUser = `INSERT INTO users (firstname, lastname, username, passwordhash) VALUES ($1, $2, $3, $4)`
+const sqlUpdateUser = `UPDATE users SET token = $2, tokenissued = $3 WHERE username = $1`
+const sqlNewUser = `INSERT INTO users (firstname, lastname, username, usertype, passwordhash) VALUES ($1, $2, $3, $4, $5)`
 const sqlCategories = `SELECT * FROM categories`
 const sqlTasks = `SELECT * FROM tasks WHERE categoryid = $1`
 const sqlInsertCategory = `INSERT INTO categories (name, starthour) VALUES ($1, $2)`
@@ -36,7 +37,7 @@ function getUserDB (username) {
         reject(new Error(`User query Error: ${err}`))
       } else {
         if (res.rows.length === 0) {
-          resolve({})
+          resolve()
         } else {
           resolve(res.rows[0])
         }
@@ -45,10 +46,23 @@ function getUserDB (username) {
   })
 }
 
-// Promisify a query to create a user
-function newUserDB (firstName, lastName, username, pwhash) {
+// Promisify a query to update a user
+function updateUserDB (username, JWToken, JWTIssueEpoch) {
   return new Promise((resolve, reject) => {
-    db.query(sqlNewUser, [firstName, lastName, username, pwhash], (err) => {
+    db.query(sqlUpdateUser, [username, JWToken, JWTIssueEpoch], (err, res) => {
+      if (err) {
+        reject(new Error(`User update query Error: ${err}`))
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+// Promisify a query to create a user
+function newUserDB (firstName, lastName, username, usertype, pwhash) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlNewUser, [firstName, lastName, username, usertype, pwhash], (err) => {
       if (err) {
         console.log(err)
         reject(new Error(`User creation Error: ${err}`))
@@ -147,15 +161,27 @@ async function insertStartingData (db) {
 async function retrieveUserJSONObject (username) {
   try {
     let userObj = await getUserDB(username)
+    if (!userObj) {
+      throw new Error('Username not found')
+    }
     return userObj
   } catch (err) {
     return { error: err }
   }
 }
 
-async function createUser (firstName, lastName, username, pwhash) {
+async function updateUser (username, JWToken, JWTIssueEpoch) {
   try {
-    await newUserDB(firstName, lastName, username, pwhash)
+    await updateUserDB(username, JWToken, JWTIssueEpoch)
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: err }
+  }
+}
+
+async function createUser (firstName, lastName, username, usertype, pwhash) {
+  try {
+    await newUserDB(firstName, lastName, username, usertype, pwhash)
     return { success: true }
   } catch (err) {
     return { success: false, error: err }
@@ -185,5 +211,6 @@ async function retrieveCategoryJSONObject () {
 export default {
   retrieveUserJSONObject,
   createUser,
+  updateUser,
   retrieveCategoryJSONObject
 }
