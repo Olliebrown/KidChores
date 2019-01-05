@@ -1,52 +1,44 @@
-import fs from 'fs'
-
-import SQLite3 from 'sqlite3'
 import config from './config'
+import { Pool } from 'pg'
 
-import DBUtil from './databaseUtils'
+// Initial data for database
+import initData from './data/TaskData'
 
-// Configure SQLite and open database connection
-SQLite3.verbose()
+// Utility functions for database verification
+import DBUtil from './postgres-databaseUtils'
 
-// Ensure database is ready
+// Connect to database
 let db
 (async () => {
-  // If the file doesn't exist, create from scratch
-  if (!fs.existsSync(config.databaseFile)) {
-    console.log('Building database from scratch')
-    db = await DBUtil.recreateDatabase()
-    await insertStartingData(db)
+  // Open Database connection and verify
+  db = new Pool({ connectionString: config.postgresURI, ssl: true })
+  let isValid = await DBUtil.verifyDatabase(db)
+  if (!isValid) {
+    console.log('Database does not match schema!! Consider rebuilding')
   } else {
-    // Else, open it and verify it's contents match the schema
-    db = new SQLite3.Database(config.databaseFile)
-    let isValid = await DBUtil.verifyDatabase(db)
-    if (!isValid) {
-      console.log('Database does not match schema!! Consider deleting file to rebuild.')
-    }
+    console.log('Dabase is valid')
   }
 })()
 
 // Data Query SQL
-const sqlGetUser = `SELECT * FROM Users WHERE username = ?`
-const sqlNewUser = `INSERT INTO Users (firstname, lastname, username, passwordhash) VALUES (?, ?, ?, ?)`
-const sqlCategories = `SELECT * FROM Category`
-const sqlTasks = `SELECT * FROM Tasks WHERE categoryid = ?`
-const sqlInsertCategory = `INSERT INTO Category (name, starthour) VALUES (?, ?)`
-const sqlInsertTask = `INSERT INTO Tasks (name, categoryid, value, details) VALUES (?, ?, ?, ?)`
+const sqlGetUser = `SELECT * FROM users WHERE username = $1`
+const sqlNewUser = `INSERT INTO users (firstname, lastname, username, passwordhash) VALUES ($1, $2, $3, $4)`
+const sqlCategories = `SELECT * FROM categories`
+const sqlTasks = `SELECT * FROM tasks WHERE categoryid = $1`
+const sqlInsertCategory = `INSERT INTO categories (name, starthour) VALUES ($1, $2)`
+const sqlInsertTask = `INSERT INTO tasks (name, categoryid, value, details) VALUES ($1, $2, $3, $4)`
 
 // Promisify a query to retrieve a user
 function getUserDB (username) {
-  let userStmt = db.prepare(sqlGetUser)
   return new Promise((resolve, reject) => {
-    userStmt.all(username, (err, rows) => {
-      userStmt.finalize()
+    db.query(sqlGetUser, [username], (err, res) => {
       if (err) {
         reject(new Error(`User query Error: ${err}`))
       } else {
-        if (rows.length === 0) {
+        if (res.rows.length === 0) {
           resolve({})
         } else {
-          resolve(rows[0])
+          resolve(res.rows[0])
         }
       }
     })
@@ -55,10 +47,8 @@ function getUserDB (username) {
 
 // Promisify a query to create a user
 function newUserDB (firstName, lastName, username, pwhash) {
-  let userStmt = db.prepare(sqlNewUser)
   return new Promise((resolve, reject) => {
-    userStmt.run(firstName, lastName, username, pwhash, (err) => {
-      userStmt.finalize()
+    db.query(sqlNewUser, [firstName, lastName, username, pwhash], (err) => {
       if (err) {
         console.log(err)
         reject(new Error(`User creation Error: ${err}`))
@@ -72,24 +62,24 @@ function newUserDB (firstName, lastName, username, pwhash) {
 // Promisify a query to retrieve all categories
 function getCategoriesDB () {
   return new Promise((resolve, reject) => {
-    db.all(sqlCategories, (err, rows) => {
+    db.query(sqlCategories, (err, res) => {
       if (err) {
         reject(new Error(`Category query Error: ${err}`))
       } else {
-        resolve(rows)
+        resolve(res.rows)
       }
     })
   })
 }
 
 // Promisify a query to retrieve a task for a given category
-function getTasksDB (preparedStmt, catID) {
+function getTasksDB (catID) {
   return new Promise((resolve, reject) => {
-    preparedStmt.all(catID, (err, rows) => {
+    db.query(sqlTasks, [catID], (err, res) => {
       if (err) {
         reject(new Error(`Tasks query Error: ${err}`))
       } else {
-        resolve(rows)
+        resolve(res.rows)
       }
     })
   })
@@ -98,7 +88,7 @@ function getTasksDB (preparedStmt, catID) {
 function insertCategoryDB (category) {
   // Rebuild the category table
   return new Promise((resolve, reject) => {
-    db.run(sqlInsertCategory, category.name, category.startHour, (err) => {
+    db.query(sqlInsertCategory, [category.name, category.startHour], (err) => {
       if (err) {
         reject(new Error(`Failed to add category: ${err}`))
       } else {
@@ -111,7 +101,7 @@ function insertCategoryDB (category) {
 function insertTaskDB (task) {
   // Rebuild the category table
   return new Promise((resolve, reject) => {
-    db.run(sqlInsertTask, task.name, task.categoryid, task.value, task.details, (err) => {
+    db.query(sqlInsertTask, [task.name, task.categoryid, task.value, task.details], (err) => {
       if (err) {
         reject(new Error(`Failed to add task: ${err}`))
       } else {
@@ -126,15 +116,15 @@ async function insertStartingData (db) {
   let tasks = []
 
   // Rebuild the category table
-  for (let i = 0; i < DBUtil.initData.categories.length; i++) {
+  for (let i = 0; i < initData.categories.length; i++) {
     try {
-      await insertCategoryDB(DBUtil.initData.categories[i])
+      await insertCategoryDB(initData.categories[i])
     } catch (err) {
       console.log(err)
     }
 
     // Build the task list while we're at it
-    DBUtil.initData.categories[i].tasks.forEach((task) => {
+    initData.categories[i].tasks.forEach((task) => {
       tasks.push({
         name: task.name,
         categoryid: i + 1,
@@ -178,18 +168,14 @@ async function retrieveCategoryJSONObject () {
     // Wait for the promised categories
     let categories = await getCategoriesDB()
 
-    // Prepare the tasks query (which has one parametr)
-    let taskStmt = db.prepare(sqlTasks)
-
     // Loop through the categories and get their tasks
     for (let i = 0; i < categories.length; i++) {
       // Decorate the category with the list of tasks
       let category = categories[i]
-      category.tasks = await getTasksDB(taskStmt, category.id)
+      category.tasks = await getTasksDB(category.id)
     }
 
-    // Finalize the statement and return the decorated categories
-    taskStmt.finalize()
+    // Return the decorated categories
     return categories
   } catch (err) {
     return { error: err }

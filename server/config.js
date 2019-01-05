@@ -60,6 +60,9 @@ export default {
   // Database info for SQLite
   databaseFile: './server/data/KidChores_records.db',
 
+  // Database info for Postgres
+  postgresURI: env.DATABASE_URL || 'postgres://nbljjfkkqqnlbt:6f200ace17958313995abdde5d849c96dd79f3d5017f33478ad5e6aa919b63d9@ec2-54-235-77-0.compute-1.amazonaws.com:5432/d69p2to0ouq8vd',
+
   // Return a fully qualified URL with host and port
   get serverUrl () {
     return `https://${this.host}:${this.SSLPort}`

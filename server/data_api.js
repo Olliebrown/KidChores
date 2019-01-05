@@ -4,7 +4,7 @@ import JWT from './jwthelper'
 import bodyParser from 'body-parser'
 
 // Interface to SQLite3 database
-import DB from './database'
+import DB from './postgres-database'
 
 // Create JWT authorization middleware
 let authorizer = expressJWT({ secret: JWT.publicKEY })
