@@ -22,6 +22,7 @@ export default {
   SSLPort: env.SSL_PORT || 8443,
   get SSLKey () {
     if (this.HEROKU) {
+      console.log(env.SSL_CERT_KEY)
       return env.SSL_CERT_KEY
     } else {
       return fs.readFileSync('./server/ssl.key')
@@ -29,6 +30,7 @@ export default {
   },
   get SSLCertificate () {
     if (this.HEROKU) {
+      console.log(env.SSL_CERT)
       return env.SSL_CERT
     } else {
       return fs.readFileSync('./server/ssl.cert')
