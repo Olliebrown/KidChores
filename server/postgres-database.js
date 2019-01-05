@@ -1,5 +1,6 @@
 import config from './config'
 import { Pool } from 'pg'
+import bcrypt from 'bcrypt'
 
 // Initial data for database
 import initData from './data/TaskData'
@@ -134,7 +135,7 @@ async function insertStartingData (db) {
     try {
       await insertCategoryDB(initData.categories[i])
     } catch (err) {
-      console.log(err)
+      console.log(`Category creation failed: ${err}`)
     }
 
     // Build the task list while we're at it
@@ -153,8 +154,16 @@ async function insertStartingData (db) {
     try {
       await insertTaskDB(tasks[i])
     } catch (err) {
-      console.log(err)
+      console.log(`Task creation failed: ${err}`)
     }
+  }
+
+  // Add default root user
+  try {
+    let newPW = bcrypt.hashSync(config.rootDefaultPassword, 10)
+    await createUser('Root', 'User', config.rootDefaultUsername, 'parent', newPW)
+  } catch (err) {
+    console.log(`User creation failed: ${err}`)
   }
 }
 

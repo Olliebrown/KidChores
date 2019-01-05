@@ -18,6 +18,10 @@ export default {
     return (env.NODE && ~env.NODE.indexOf('heroku'))
   },
 
+  // Defaults for root account when re-initializing the database
+  rootDefaultUsername: 'root',
+  rootDefaultPassword: 'Wytm2ft?',
+
   // SSL Options
   SSLPort: env.SSL_PORT || 8443,
   get SSLKey () {

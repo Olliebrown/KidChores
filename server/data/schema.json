@@ -1,8 +1,8 @@
 {
   "tables": [
     { "name": "users", "columns": [ "id", "username", "passwordhash", "usertype", "firstname", "lastname", "token", "tokenissued" ] },
-    { "name": "categories", "columns": [ "id", "name", "starthour" ] },
-    { "name": "tasks", "columns": [ "id", "name", "categoryid", "value", "details" ] },
+    { "name": "categories", "columns": [ "id", "name", "starthour", "value", "active" ] },
+    { "name": "tasks", "columns": [ "id", "name", "categoryid", "value", "details", "active" ] },
     { "name": "completedtasks", "columns": [ "id", "dayepoch", "userid", "taskid", "approved", "paid" ] }
   ]
 }
