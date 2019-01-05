@@ -36,7 +36,7 @@ dataRouter.post('/newuser/', async (req, res) => {
 // NOTE: User must be logged in for the rest of the routes below to work
 
 // Retrieve a list of all categories including their tasks
-dataRouter.get('/categories', authorizer, async (req, res) => {
+dataRouter.get('/categories', async (req, res) => {
   let result = await DB.retrieveCategoryJSONObject()
   if (result.error) {
     res.status(500).json(result)
