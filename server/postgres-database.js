@@ -94,9 +94,9 @@ function updateUserPasswordDB (username, pwhash) {
 }
 
 // Promisify a query to create a user
-function newUserDB (firstName, lastName, username, usertype, pwhash) {
+function newUserDB (firstname, lastname, username, usertype, pwhash) {
   return new Promise((resolve, reject) => {
-    db.query(sqlNewUser, [firstName, lastName, username, usertype, pwhash], (err) => {
+    db.query(sqlNewUser, [firstname, lastname, username, usertype, pwhash], (err) => {
       if (err) {
         console.log(err)
         reject(new Error(`User creation Error: ${err}`))
@@ -278,9 +278,9 @@ async function updateUserPassword (username, pwhash) {
   }
 }
 
-async function createUser (firstName, lastName, username, usertype, pwhash) {
+async function createUser (firstname, lastname, username, usertype, pwhash) {
   try {
-    await newUserDB(firstName, lastName, username, usertype, pwhash)
+    await newUserDB(firstname, lastname, username, usertype, pwhash)
     return { success: true }
   } catch (err) {
     return { success: false, error: err }

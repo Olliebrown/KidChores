@@ -65,7 +65,7 @@ dataRouter.post('/newuser', authorizer, async (req, res) => {
     res.status(403).json({ error: 'Not privledged' })
   } else {
     let pwhash = bcrypt.hashSync(req.body.password, 10)
-    let result = await DB.createUser(req.body.firstName, req.body.lastName, req.body.username, req.body.usertype, pwhash)
+    let result = await DB.createUser(req.body.firstname, req.body.lastname, req.body.username, req.body.usertype, pwhash)
     res.json(result)
   }
 })
@@ -112,7 +112,7 @@ dataRouter.get('/categories', authorizer, async (req, res) => {
 
 // Retrieve a list of all tasks completed for a given user on a given day
 dataRouter.post('/updatecompleted', authorizer, async (req, res) => {
-  if (req.user.subject !== req.body.username && req.user.usertype !== 'parent') {
+  if (req.user.sub !== req.body.username && req.user.usertype !== 'parent') {
     res.status(403).json({ error: 'Not privledged' })
   } else {
     // Lookup user details for userid
@@ -137,8 +137,13 @@ dataRouter.post('/updatecompleted', authorizer, async (req, res) => {
 
 // Retrieve a list of all tasks completed for a given user on a given day
 dataRouter.post('/completedtasks/', authorizer, async (req, res) => {
-  if (req.user.subject !== req.body.username && req.user.usertype !== 'parent') {
-    res.status(403).json({ error: 'Not privledged' })
+  if (req.user.sub !== req.body.username && req.user.usertype !== 'parent') {
+    res.status(403).json({
+      error: 'Not privledged',
+      subject: req.user.sub,
+      user: req.body.username,
+      type: req.user.usertype
+    })
   } else {
     // Lookup user details for userid
     let user = await DB.retrieveUserJSONObject(req.body.username)
