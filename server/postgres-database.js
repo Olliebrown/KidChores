@@ -23,14 +23,19 @@ let db
 
 // Data Query SQL
 const sqlGetUser = `SELECT * FROM users WHERE username = $1`
+const sqlCategories = `SELECT * FROM categories`
+const sqlTasks = `SELECT * FROM tasks WHERE categoryid = $1`
+const sqlCompletedTasks = `SELECT * FROM completedtasks WHERE userid = $1 AND dayepoch = $2`
+
 const sqlUpdateUserToken = `UPDATE users SET token = $2, tokenissued = $3 WHERE username = $1`
 const sqlUpdateUserDetails = `UPDATE users SET firstname = $2, lastname = $3 WHERE username = $1`
 const sqlUpdateUserPassword = `UPDATE users SET passwordhash = $4 WHERE username = $1`
+const sqlUpdateCompletedTasks = `UPDATE completedtasks SET tasks = $3 WHERE userid = $1 AND dayepoch = $2`
+
 const sqlNewUser = `INSERT INTO users (firstname, lastname, username, usertype, passwordhash) VALUES ($1, $2, $3, $4, $5)`
-const sqlCategories = `SELECT * FROM categories`
-const sqlTasks = `SELECT * FROM tasks WHERE categoryid = $1`
 const sqlInsertCategory = `INSERT INTO categories (name, starthour) VALUES ($1, $2)`
 const sqlInsertTask = `INSERT INTO tasks (name, categoryid, value, details) VALUES ($1, $2, $3, $4)`
+const sqlInsertCompletedTasks = `INSERT INTO completedtasks ( userid, dayepoch, tasks) VALUES ($1, $2, $3)`
 
 // Promisify a query to retrieve a user
 function getUserDB (username) {
@@ -95,6 +100,45 @@ function newUserDB (firstName, lastName, username, usertype, pwhash) {
       if (err) {
         console.log(err)
         reject(new Error(`User creation Error: ${err}`))
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+// Promisify a query to retrieve completed tasks for a given day and user
+function getCompletedTasksDB (userid, dayepoch) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlCompletedTasks, [userid, dayepoch], (err, res) => {
+      if (err) {
+        reject(new Error(`Completed Tasks query Error: ${err}`))
+      } else {
+        resolve(res.rows[0])
+      }
+    })
+  })
+}
+
+// Promisify a query to insert a new row of completed tasks
+function createCompletedTasksDB (userid, dayepoch, tasks) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlInsertCompletedTasks, [userid, dayepoch, tasks], (err, res) => {
+      if (err) {
+        reject(new Error(`Completed Tasks creation query Error: ${err}`))
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+// Promisify a query to update completed tasks for a given day and user
+function updateCompletedTasksDB (userid, dayepoch, tasks) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlUpdateCompletedTasks, [userid, dayepoch, tasks], (err, res) => {
+      if (err) {
+        reject(new Error(`Completed Tasks update query Error: ${err}`))
       } else {
         resolve()
       }
@@ -263,11 +307,41 @@ async function retrieveCategoryJSONObject () {
   }
 }
 
+async function retrieveCompletedTasks (userid, dayepoch, tasks) {
+  try {
+    let result = await getCompletedTasksDB(userid, dayepoch, tasks)
+    return (result)
+  } catch (err) {
+    return ({ error: err })
+  }
+}
+
+async function updateCompletedTasks (userid, dayepoch, tasks) {
+  try {
+    await updateCompletedTasksDB(userid, dayepoch, tasks)
+    return ({ success: true })
+  } catch (err) {
+    return ({ success: false, error: err })
+  }
+}
+
+async function createCompletedTasks (userid, dayepoch, tasks) {
+  try {
+    await createCompletedTasksDB(userid, dayepoch, tasks)
+    return ({ success: true })
+  } catch (err) {
+    return ({ success: false, error: err })
+  }
+}
+
 export default {
   createUser,
+  createCompletedTasks,
   updateUserToken,
   updateUserDetails,
   updateUserPassword,
+  updateCompletedTasks,
   retrieveUserJSONObject,
-  retrieveCategoryJSONObject
+  retrieveCategoryJSONObject,
+  retrieveCompletedTasks
 }

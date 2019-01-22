@@ -13,12 +13,15 @@ import $ from 'jquery'
 
 // Import helper functions from other modules
 import { today, toEpochSeconds, currentHourLocal } from './utils'
-import { retrieveCategorySchema } from './data'
+import { retrieveSchemaAndTasks, syncCompletedTasks } from './data'
 import { checkAndDecodeToken, makeNewUser, loginExistingUser,
   updateExistingUser, logoutUser, updateUserState } from './user'
 
 // Initialize the current date to today
 let currentDate = today()
+
+// Initialize list of completed tasks
+let completedTasks = new Set()
 
 // ID used for the main Bootstrap accordion container
 const ACCORDION_ID = 'taskCategoriesAccordion'
@@ -33,19 +36,23 @@ $(document).ready(() => {
   checkAndDecodeToken().then((data) => {
     userInfo = data
     updateUserState(userInfo)
-    retrieveCategorySchema(processTaskData)
+    retrieveSchemaAndTasks(processTaskData, userInfo.username, toEpochSeconds(currentDate))
   })
 
   // Setup date nav links
   $('#prevDayLink').click((e) => {
     e.preventDefault()
     currentDate.setDate(currentDate.getDate() - 1)
+    completedTasks.clear()
+    retrieveSchemaAndTasks(processTaskData, userInfo.username, toEpochSeconds(currentDate))
     updateDateNav()
   })
 
   $('#nextDayLink').click((e) => {
     e.preventDefault()
     currentDate.setDate(currentDate.getDate() + 1)
+    completedTasks.clear()
+    retrieveSchemaAndTasks(processTaskData, userInfo.username, toEpochSeconds(currentDate))
     updateDateNav()
   })
 
@@ -68,7 +75,8 @@ $(document).ready(() => {
     logoutUser()
     userInfo = undefined
     updateUserState(userInfo)
-    retrieveCategorySchema(processTaskData)
+    retrieveSchemaAndTasks(processTaskData)
+    completedTasks.clear()
   })
 
   $('#newUserLink').click((event) => {
@@ -106,7 +114,7 @@ function loginSubmit (event) {
   loginExistingUser().then((loginInfo) => {
     if (loginInfo) {
       userInfo = loginInfo
-      retrieveCategorySchema(processTaskData)
+      retrieveSchemaAndTasks(processTaskData, userInfo.username, toEpochSeconds(currentDate))
     }
   })
 }
@@ -142,7 +150,7 @@ function updateDateNav () {
 function processTaskData (data) {
   // Clear the category list container first
   $('#category-list').empty()
-  
+
   // Check if we were properly authorized
   if (data.unauthorized) {
     let loginMessage = $('<h5/>').addClass('text-center m-3').text('Please login (click login in the nav bar)')
@@ -295,16 +303,24 @@ function buildCard (cardData, catID) {
 
   // Make each card toggle when you click it
   cardTag.css('cursor', 'pointer')
-  cardTag.click((e) => {
-    e.preventDefault()
+
+  cardTag[0].toggle = () => {
     let checked = cardFooterTag.hasClass('bg-success')
     if (checked) {
       cardFooterTag.removeClass('bg-success')
       checkIcon.addClass('hidden')
+      completedTasks.delete(cardData.id)
     } else {
       cardFooterTag.addClass('bg-success')
       checkIcon.removeClass('hidden')
+      completedTasks.add(cardData.id)
     }
+  }
+
+  cardTag.click((e) => {
+    e.preventDefault()
+    cardTag[0].toggle()
+    syncCompletedTasks(userInfo.username, toEpochSeconds(currentDate), Array.from(completedTasks))
   })
 
   return cardTag

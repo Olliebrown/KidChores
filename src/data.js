@@ -6,6 +6,56 @@ import $ from 'jquery'
 // Import configuration info and utility functions
 import { makeAJAXSettings } from './utils'
 
+async function getCompletedTasks (username, datecode) {
+  return new Promise((resolve, reject) => {
+    let AJAXSettings = makeAJAXSettings(
+      '/data/completedtasks/',
+      (data) => {
+        if (data.error) {
+          reject(new Error(`Error retrieving complete tasks: ${data.error}`))
+        } else {
+          resolve(data)
+        }
+      },
+      { username, datecode }
+    )
+
+    $.post(AJAXSettings)
+      .fail((jqXHR, textStatus) => {
+        if (jqXHR.status === 401 || jqXHR.status === 403) {
+          resolve({ unauthorized: true })
+        } else {
+          reject(new Error(`Failed to retrieve completed task data (${jqXHR.status})`))
+        }
+      })
+  })
+}
+
+async function updateCompletedTasks (username, datecode, tasks) {
+  return new Promise((resolve, reject) => {
+    let AJAXSettings = makeAJAXSettings(
+      '/data/updatecompleted/',
+      (data) => {
+        if (data.error) {
+          reject(new Error(`Error updating complete tasks: ${data.error}`))
+        } else {
+          resolve(data)
+        }
+      },
+      { username, datecode, tasks: JSON.stringify(tasks) }
+    )
+
+    $.post(AJAXSettings)
+      .fail((jqXHR, textStatus) => {
+        if (jqXHR.status === 401 || jqXHR.status === 403) {
+          resolve({ unauthorized: true })
+        } else {
+          reject(new Error(`Failed to update completed tasks data (${jqXHR.status})`))
+        }
+      })
+  })
+}
+
 async function getCategories () {
   return new Promise((resolve, reject) => {
     // Build the ajax settings
@@ -26,10 +76,22 @@ async function getCategories () {
   })
 }
 
-export async function retrieveCategorySchema (callback) {
+export async function retrieveSchemaAndTasks (schemaCallback, username, datecode) {
   try {
     let categories = await getCategories()
-    callback(categories)
+    schemaCallback(categories)
+    if (username) {
+      let data = await getCompletedTasks(username, datecode)
+      data.tasks.forEach((id) => { $(`#task${id}`)[0].toggle() })
+    }
+  } catch (err) {
+    console.log(`Error: ${err}`)
+  }
+}
+
+export async function syncCompletedTasks (username, datecode, tasks) {
+  try {
+    await updateCompletedTasks(username, datecode, tasks)
   } catch (err) {
     console.log(`Error: ${err}`)
   }

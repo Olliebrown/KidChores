@@ -111,15 +111,48 @@ dataRouter.get('/categories', authorizer, async (req, res) => {
 })
 
 // Retrieve a list of all tasks completed for a given user on a given day
-dataRouter.get('/daily/:user/:datecode', authorizer, async (req, res) => {
-  if (req.user.subject !== req.params.user && req.user.usertype !== 'parent') {
+dataRouter.post('/updatecompleted', authorizer, async (req, res) => {
+  if (req.user.subject !== req.body.username && req.user.usertype !== 'parent') {
     res.status(403).json({ error: 'Not privledged' })
   } else {
-    let result = await DB.retrieveCompletedJSONObject(req.params.user, req.params.datecode)
-    if (result.error) {
-      res.status(500).json(result)
+    // Lookup user details for userid
+    let user = await DB.retrieveUserJSONObject(req.body.username)
+    if (user.error) {
+      res.status(401).json({ error: user.error })
     } else {
-      res.json({ categories: result })
+      // Get clean list of tasks
+      let tasks = JSON.parse(req.body.tasks) || []
+      // Check if there's an entry for this user and date
+      let existing = await DB.retrieveCompletedTasks(user.id, req.body.datecode)
+      if (!existing || existing.error) {
+        let result = await DB.createCompletedTasks(user.id, req.body.datecode, tasks)
+        res.status(result.success ? 200 : 500).json(result)
+      } else {
+        let result = await DB.updateCompletedTasks(user.id, req.body.datecode, tasks)
+        res.status(result.success ? 200 : 500).json(result)
+      }
+    }
+  }
+})
+
+// Retrieve a list of all tasks completed for a given user on a given day
+dataRouter.post('/completedtasks/', authorizer, async (req, res) => {
+  if (req.user.subject !== req.body.username && req.user.usertype !== 'parent') {
+    res.status(403).json({ error: 'Not privledged' })
+  } else {
+    // Lookup user details for userid
+    let user = await DB.retrieveUserJSONObject(req.body.username)
+    if (user.error) {
+      res.status(401).json({ error: user.error })
+    } else {
+      let result = await DB.retrieveCompletedTasks(user.id, req.body.datecode)
+      if (!result) {
+        res.status(404).json({ error: 'not found' })
+      } else if (result.error) {
+        res.status(500).json(result)
+      } else {
+        res.json(result)
+      }
     }
   }
 })

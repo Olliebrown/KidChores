@@ -14443,12 +14443,13 @@ __webpack_require__.r(__webpack_exports__);
 /*!*********************!*\
   !*** ./src/data.js ***!
   \*********************/
-/*! exports provided: retrieveCategorySchema */
+/*! exports provided: retrieveSchemaAndTasks, syncCompletedTasks */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "retrieveCategorySchema", function() { return retrieveCategorySchema; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "retrieveSchemaAndTasks", function() { return retrieveSchemaAndTasks; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "syncCompletedTasks", function() { return syncCompletedTasks; });
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
@@ -14462,6 +14463,95 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 
 
+function getCompletedTasks(_x, _x2) {
+  return _getCompletedTasks.apply(this, arguments);
+}
+
+function _getCompletedTasks() {
+  _getCompletedTasks = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee(username, datecode) {
+    return regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            return _context.abrupt("return", new Promise(function (resolve, reject) {
+              var AJAXSettings = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["makeAJAXSettings"])('/data/completedtasks/', function (data) {
+                if (data.error) {
+                  reject(new Error("Error retrieving complete tasks: ".concat(data.error)));
+                } else {
+                  resolve(data);
+                }
+              }, {
+                username: username,
+                datecode: datecode
+              });
+              jquery__WEBPACK_IMPORTED_MODULE_0___default.a.post(AJAXSettings).fail(function (jqXHR, textStatus) {
+                if (jqXHR.status === 401 || jqXHR.status === 403) {
+                  resolve({
+                    unauthorized: true
+                  });
+                } else {
+                  reject(new Error("Failed to retrieve completed task data (".concat(jqXHR.status, ")")));
+                }
+              });
+            }));
+
+          case 1:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee, this);
+  }));
+  return _getCompletedTasks.apply(this, arguments);
+}
+
+function updateCompletedTasks(_x3, _x4, _x5) {
+  return _updateCompletedTasks.apply(this, arguments);
+}
+
+function _updateCompletedTasks() {
+  _updateCompletedTasks = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee2(username, datecode, tasks) {
+    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            return _context2.abrupt("return", new Promise(function (resolve, reject) {
+              var AJAXSettings = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["makeAJAXSettings"])('/data/updatecompleted/', function (data) {
+                if (data.error) {
+                  reject(new Error("Error updating complete tasks: ".concat(data.error)));
+                } else {
+                  resolve(data);
+                }
+              }, {
+                username: username,
+                datecode: datecode,
+                tasks: JSON.stringify(tasks)
+              });
+              jquery__WEBPACK_IMPORTED_MODULE_0___default.a.post(AJAXSettings).fail(function (jqXHR, textStatus) {
+                if (jqXHR.status === 401 || jqXHR.status === 403) {
+                  resolve({
+                    unauthorized: true
+                  });
+                } else {
+                  reject(new Error("Failed to update completed tasks data (".concat(jqXHR.status, ")")));
+                }
+              });
+            }));
+
+          case 1:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2, this);
+  }));
+  return _updateCompletedTasks.apply(this, arguments);
+}
+
 function getCategories() {
   return _getCategories.apply(this, arguments);
 }
@@ -14469,12 +14559,12 @@ function getCategories() {
 function _getCategories() {
   _getCategories = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee() {
-    return regeneratorRuntime.wrap(function _callee$(_context) {
+  regeneratorRuntime.mark(function _callee3() {
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
-        switch (_context.prev = _context.next) {
+        switch (_context3.prev = _context3.next) {
           case 0:
-            return _context.abrupt("return", new Promise(function (resolve, reject) {
+            return _context3.abrupt("return", new Promise(function (resolve, reject) {
               // Build the ajax settings
               var AJAXSettings = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["makeAJAXSettings"])('/data/categories/', function (data) {
                 resolve(data);
@@ -14493,50 +14583,101 @@ function _getCategories() {
 
           case 1:
           case "end":
-            return _context.stop();
+            return _context3.stop();
         }
       }
-    }, _callee, this);
+    }, _callee3, this);
   }));
   return _getCategories.apply(this, arguments);
 }
 
-function retrieveCategorySchema(_x) {
-  return _retrieveCategorySchema.apply(this, arguments);
+function retrieveSchemaAndTasks(_x6, _x7, _x8) {
+  return _retrieveSchemaAndTasks.apply(this, arguments);
 }
 
-function _retrieveCategorySchema() {
-  _retrieveCategorySchema = _asyncToGenerator(
+function _retrieveSchemaAndTasks() {
+  _retrieveSchemaAndTasks = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee2(callback) {
-    var categories;
-    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+  regeneratorRuntime.mark(function _callee4(schemaCallback, username, datecode) {
+    var categories, data;
+    return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
-        switch (_context2.prev = _context2.next) {
+        switch (_context4.prev = _context4.next) {
           case 0:
-            _context2.prev = 0;
-            _context2.next = 3;
+            _context4.prev = 0;
+            _context4.next = 3;
             return getCategories();
 
           case 3:
-            categories = _context2.sent;
-            callback(categories);
-            _context2.next = 10;
-            break;
+            categories = _context4.sent;
+            schemaCallback(categories);
 
-          case 7:
-            _context2.prev = 7;
-            _context2.t0 = _context2["catch"](0);
-            console.log("Error: ".concat(_context2.t0));
+            if (!username) {
+              _context4.next = 10;
+              break;
+            }
+
+            _context4.next = 8;
+            return getCompletedTasks(username, datecode);
+
+          case 8:
+            data = _context4.sent;
+            data.tasks.forEach(function (id) {
+              jquery__WEBPACK_IMPORTED_MODULE_0___default()("#task".concat(id))[0].toggle();
+            });
 
           case 10:
+            _context4.next = 15;
+            break;
+
+          case 12:
+            _context4.prev = 12;
+            _context4.t0 = _context4["catch"](0);
+            console.log("Error: ".concat(_context4.t0));
+
+          case 15:
           case "end":
-            return _context2.stop();
+            return _context4.stop();
         }
       }
-    }, _callee2, this, [[0, 7]]);
+    }, _callee4, this, [[0, 12]]);
   }));
-  return _retrieveCategorySchema.apply(this, arguments);
+  return _retrieveSchemaAndTasks.apply(this, arguments);
+}
+
+function syncCompletedTasks(_x9, _x10, _x11) {
+  return _syncCompletedTasks.apply(this, arguments);
+}
+
+function _syncCompletedTasks() {
+  _syncCompletedTasks = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee5(username, datecode, tasks) {
+    return regeneratorRuntime.wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            _context5.prev = 0;
+            _context5.next = 3;
+            return updateCompletedTasks(username, datecode, tasks);
+
+          case 3:
+            _context5.next = 8;
+            break;
+
+          case 5:
+            _context5.prev = 5;
+            _context5.t0 = _context5["catch"](0);
+            console.log("Error: ".concat(_context5.t0));
+
+          case 8:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5, this, [[0, 5]]);
+  }));
+  return _syncCompletedTasks.apply(this, arguments);
 }
 
 /***/ }),
@@ -14608,7 +14749,9 @@ __webpack_require__.r(__webpack_exports__);
 
  // Initialize the current date to today
 
-var currentDate = Object(_utils__WEBPACK_IMPORTED_MODULE_5__["today"])(); // ID used for the main Bootstrap accordion container
+var currentDate = Object(_utils__WEBPACK_IMPORTED_MODULE_5__["today"])(); // Initialize list of completed tasks
+
+var completedTasks = new Set(); // ID used for the main Bootstrap accordion container
 
 var ACCORDION_ID = 'taskCategoriesAccordion'; // Identifies the default collapse category while constructing the task matrix
 
@@ -14620,17 +14763,21 @@ jquery__WEBPACK_IMPORTED_MODULE_4___default()(document).ready(function () {
   Object(_user__WEBPACK_IMPORTED_MODULE_7__["checkAndDecodeToken"])().then(function (data) {
     userInfo = data;
     Object(_user__WEBPACK_IMPORTED_MODULE_7__["updateUserState"])(userInfo);
-    Object(_data__WEBPACK_IMPORTED_MODULE_6__["retrieveCategorySchema"])(processTaskData);
+    Object(_data__WEBPACK_IMPORTED_MODULE_6__["retrieveSchemaAndTasks"])(processTaskData, userInfo.username, Object(_utils__WEBPACK_IMPORTED_MODULE_5__["toEpochSeconds"])(currentDate));
   }); // Setup date nav links
 
   jquery__WEBPACK_IMPORTED_MODULE_4___default()('#prevDayLink').click(function (e) {
     e.preventDefault();
     currentDate.setDate(currentDate.getDate() - 1);
+    completedTasks.clear();
+    Object(_data__WEBPACK_IMPORTED_MODULE_6__["retrieveSchemaAndTasks"])(processTaskData, userInfo.username, Object(_utils__WEBPACK_IMPORTED_MODULE_5__["toEpochSeconds"])(currentDate));
     updateDateNav();
   });
   jquery__WEBPACK_IMPORTED_MODULE_4___default()('#nextDayLink').click(function (e) {
     e.preventDefault();
     currentDate.setDate(currentDate.getDate() + 1);
+    completedTasks.clear();
+    Object(_data__WEBPACK_IMPORTED_MODULE_6__["retrieveSchemaAndTasks"])(processTaskData, userInfo.username, Object(_utils__WEBPACK_IMPORTED_MODULE_5__["toEpochSeconds"])(currentDate));
     updateDateNav();
   }); // Initialize the date values
 
@@ -14649,7 +14796,8 @@ jquery__WEBPACK_IMPORTED_MODULE_4___default()(document).ready(function () {
     Object(_user__WEBPACK_IMPORTED_MODULE_7__["logoutUser"])();
     userInfo = undefined;
     Object(_user__WEBPACK_IMPORTED_MODULE_7__["updateUserState"])(userInfo);
-    Object(_data__WEBPACK_IMPORTED_MODULE_6__["retrieveCategorySchema"])(processTaskData);
+    Object(_data__WEBPACK_IMPORTED_MODULE_6__["retrieveSchemaAndTasks"])(processTaskData);
+    completedTasks.clear();
   });
   jquery__WEBPACK_IMPORTED_MODULE_4___default()('#newUserLink').click(function (event) {
     event.preventDefault();
@@ -14683,7 +14831,7 @@ function loginSubmit(event) {
   Object(_user__WEBPACK_IMPORTED_MODULE_7__["loginExistingUser"])().then(function (loginInfo) {
     if (loginInfo) {
       userInfo = loginInfo;
-      Object(_data__WEBPACK_IMPORTED_MODULE_6__["retrieveCategorySchema"])(processTaskData);
+      Object(_data__WEBPACK_IMPORTED_MODULE_6__["retrieveSchemaAndTasks"])(processTaskData, userInfo.username, Object(_utils__WEBPACK_IMPORTED_MODULE_5__["toEpochSeconds"])(currentDate));
     }
   });
 }
@@ -14863,17 +15011,25 @@ function buildCard(cardData, catID) {
   cardTag.append(cardFooterTag); // Make each card toggle when you click it
 
   cardTag.css('cursor', 'pointer');
-  cardTag.click(function (e) {
-    e.preventDefault();
+
+  cardTag[0].toggle = function () {
     var checked = cardFooterTag.hasClass('bg-success');
 
     if (checked) {
       cardFooterTag.removeClass('bg-success');
       checkIcon.addClass('hidden');
+      completedTasks.delete(cardData.id);
     } else {
       cardFooterTag.addClass('bg-success');
       checkIcon.removeClass('hidden');
+      completedTasks.add(cardData.id);
     }
+  };
+
+  cardTag.click(function (e) {
+    e.preventDefault();
+    cardTag[0].toggle();
+    Object(_data__WEBPACK_IMPORTED_MODULE_6__["syncCompletedTasks"])(userInfo.username, Object(_utils__WEBPACK_IMPORTED_MODULE_5__["toEpochSeconds"])(currentDate), Array.from(completedTasks));
   });
   return cardTag;
 }
