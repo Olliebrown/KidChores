@@ -8,27 +8,26 @@
     ]
   }, {
     "name": "After School", "startHour": 12, "tasks": [
-      { "name": "Get Dressed", "value": 0.2, "details": "Fully dressed with socks and clean underwear." },
-      { "name": "Brush Hair", "value": 0.2, "details": "Brush your hair to get rid of tangles." },
-      { "name": "Eat Breakfast", "value": 0.2, "details": "Prepare and eat breakfast." },
-      { "name": "Pack Backpack", "value": 0.2, "details": "Put lunch and folder in backpack." },
-      { "name": "Dress for Outside", "value": 0.2, "details": "Put on shoes, coat, winter gear, etc." }
+      { "name": "Hang Backpack", "value": 0.2, "details": "Make sure you backpack is put away." },
+      { "name": "Hang Coat etc.", "value": 0.2, "details": "Make sure shoes, coat, etc. are put away." },
+      { "name": "Empty Lunch Bag", "value": 0.2, "details": "Empty lunch bag and place by stairs." },
+      { "name": "Check HW Folder", "value": 0.2, "details": "Look in your folder and show to mom/dad." },
+      { "name": "Eat Snack", "value": 0.2, "details": "Eat a light snack." }
     ]
   }, {
     "name": "Evening", "startHour": 17, "tasks": [
-      { "name": "Get Dressed", "value": 0.2, "details": "Fully dressed with socks and clean underwear." },
-      { "name": "Brush Hair", "value": 0.2, "details": "Brush your hair to get rid of tangles." },
-      { "name": "Eat Breakfast", "value": 0.2, "details": "Prepare and eat breakfast." },
-      { "name": "Pack Backpack", "value": 0.2, "details": "Put lunch and folder in backpack." },
-      { "name": "Dress for Outside", "value": 0.2, "details": "Put on shoes, coat, winter gear, etc." }
+      { "name": "No Electronics", "value": 0.2, "details": "Wait to play electronics until 5p" },
+      { "name": "Get in Car", "value": 0.2, "details": "Get in the car to pickup dad first time asked." },
+      { "name": "Stay in Seat", "value": 0.2, "details": "Remain in your seat during dinner." },
+      { "name": "Clean Up Dishes", "value": 0.2, "details": "Bring your dishes to the sink or dishwasher." }
     ]
   }, {
     "name": "Bedtime", "startHour": 19, "tasks": [
-      { "name": "Get Dressed", "value": 0.2, "details": "Fully dressed with socks and clean underwear." },
-      { "name": "Brush Hair", "value": 0.2, "details": "Brush your hair to get rid of tangles." },
-      { "name": "Eat Breakfast", "value": 0.2, "details": "Prepare and eat breakfast." },
-      { "name": "Pack Backpack", "value": 0.2, "details": "Put lunch and folder in backpack." },
-      { "name": "Dress for Outside", "value": 0.2, "details": "Put on shoes, coat, winter gear, etc." }
+      { "name": "Pajamas", "value": 0.2, "details": "Put on pajamas (using clean clothes)." },
+      { "name": "Brush Teeth", "value": 0.2, "details": "Brush your teeth for 2 minutes." },
+      { "name": "Use Bathroom", "value": 0.2, "details": "Go potty close to bedtime." },
+      { "name": "Get Drink", "value": 0.2, "details": "Get some water for by your bed." },
+      { "name": "Calmly Sleep", "value": 0.2, "details": "Calmly stay in bed and listen to dad/mom." }
     ]
   }
 ]}

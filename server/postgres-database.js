@@ -19,6 +19,12 @@ let db
   } else {
     console.log('Database is valid')
   }
+
+  // WARNING: Un-commenting lines below will purge and re-create Database!
+  // console.log('Rebuilding database')
+  // db = await DBUtil.recreateDatabase()
+  // insertStartingData(db)
+  // console.log('-- done rebuilding. All data erased.')
 })()
 
 // Data Query SQL

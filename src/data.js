@@ -1,4 +1,4 @@
-// General utility functions used in many locations
+// Functions for the main web page that deal with data retrieval
 
 // Import jQuery as the usual '$' variable
 import $ from 'jquery'
@@ -76,8 +76,19 @@ async function getCategories () {
   })
 }
 
+export function hideTaskList () {
+  return new Promise((resolve, reject) => {
+    if ($('#category-list').css('display') !== 'none') {
+      $('#category-list').fadeOut(400, 'swing', () => { resolve() })
+    } else {
+      resolve()
+    }
+  })
+}
+
 export async function retrieveSchemaAndTasks (schemaCallback, username, datecode) {
   try {
+    await hideTaskList()
     let categories = await getCategories()
     schemaCallback(categories)
     if (username) {

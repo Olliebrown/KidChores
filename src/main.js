@@ -6,13 +6,14 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/js/all'
 
 // Load customized CSS after bootstrap css
+import './loading.css'
 import './index.css'
 
 // Import jQuery as the usual '$' variable
 import $ from 'jquery'
 
 // Import helper functions from other modules
-import { today, toEpochSeconds, currentHourLocal } from './utils'
+import { today, toEpochSeconds, currentHourLocal, makeSpinner } from './utils'
 import { retrieveSchemaAndTasks, syncCompletedTasks } from './data'
 import { checkAndDecodeToken, makeNewUser, loginExistingUser,
   updateExistingUser, logoutUser, updateUserState } from './user'
@@ -34,7 +35,7 @@ let userInfo = null
 $(document).ready(() => {
   // Get information about the user
   checkAndDecodeToken().then((data) => {
-    userInfo = data
+    userInfo = data || { username: '', invalid: true }
     updateUserState(userInfo)
     retrieveSchemaAndTasks(processTaskData, userInfo.username, toEpochSeconds(currentDate))
   })
@@ -88,45 +89,74 @@ $(document).ready(() => {
     event.preventDefault()
     $('#updateUserModel').modal('show')
   })
-
-  // Set custom validity check for input field
-  $('#inputPasswordVerify').on('input', (e) => {
-    if ($('#inputNewPassword').val() !== $('#inputPasswordVerify').val()) {
-      alert('Passwords do not match')
-      e.target.setCustomValidity('Passwords do not match')
-    } else {
-      e.target.setCustomValidity('')
-    }
-  })
-
-  $('#inputNewPasswordVerifyUpdate').on('input', (e) => {
-    if ($('#inputNewPasswordUpdate').val() !== $('#inputNewPasswordVerifyUpdate').val()) {
-      alert('New passwords do not match')
-      e.target.setCustomValidity('Passwords do not match')
-    } else {
-      e.target.setCustomValidity('')
-    }
-  })
 })
+
+function makeButtonShowLoading (buttonID) {
+  let oldText = $(`#${buttonID}`).text()
+  let oldWidth = $(`#${buttonID}`).css('width')
+  $(`#${buttonID}`).attr('disabled', 'true')
+  $(`#${buttonID}`).attr('oldtext', oldText)
+
+  $(`#${buttonID}`).text('')
+  $(`#${buttonID}`).append($('<div/>').addClass('ld ld-ring ld-spin'))
+  $(`#${buttonID}`).css('width', oldWidth)
+}
+
+function restoreButton (buttonID) {
+  $(`#${buttonID}`).empty()
+  $(`#${buttonID}`).removeAttr('disabled')
+
+  let oldText = $(`#${buttonID}`).attr('oldtext')
+  $(`#${buttonID}`).text(oldText)
+}
 
 function loginSubmit (event) {
   event.preventDefault()
+  makeButtonShowLoading('loginSubmit')
+
   loginExistingUser().then((loginInfo) => {
     if (loginInfo) {
       userInfo = loginInfo
       retrieveSchemaAndTasks(processTaskData, userInfo.username, toEpochSeconds(currentDate))
     }
+    restoreButton('loginSubmit')
   })
 }
 
 function newUserSubmit (event) {
   event.preventDefault()
-  makeNewUser()
+
+  let pwVerify = $('#inputPasswordVerify')
+  if ($('#inputNewPassword').val() !== pwVerify.val()) {
+    alert('Passwords do not match')
+    pwVerify[0].setCustomValidity('Passwords do not match')
+    return
+  } else {
+    pwVerify[0].setCustomValidity('')
+  }
+
+  makeButtonShowLoading('newUserSubmit')
+  makeNewUser().then(() => {
+    restoreButton('newUserSubmit')
+  })
 }
 
 function updateUserSubmit (event) {
   event.preventDefault()
-  updateExistingUser()
+
+  let pwVerify = $('#inputNewPasswordVerifyUpdate')
+  if ($('#inputNewPasswordUpdate').val() !== pwVerify.val()) {
+    alert('New passwords do not match')
+    pwVerify[0].setCustomValidity('Passwords do not match')
+    return
+  } else {
+    pwVerify[0].setCustomValidity('')
+  }
+
+  makeButtonShowLoading('updateUserSubmit')
+  updateExistingUser().then(() => {
+    restoreButton('updateUserSubmit')
+  })
 }
 
 let format = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
@@ -155,12 +185,15 @@ function processTaskData (data) {
   if (data.unauthorized) {
     let loginMessage = $('<h5/>').addClass('text-center m-3').text('Please login (click login in the nav bar)')
     $('#category-list').append(loginMessage)
+    $('#category-list').fadeIn(400, 'swing')
   } else {
     // Create the task matrix accordion and append it to our main content area
     let taskMatrix = buildTaskMatrix(data)
     if (taskMatrix != null) {
       $('#category-list').append(taskMatrix)
-      toggleDefaultCollapse()
+      $('#category-list').fadeIn(400, 'swing', () => {
+        toggleDefaultCollapse()
+      })
     }
   }
 }
@@ -242,6 +275,7 @@ function buildCategory (categoryData) {
     .attr('aria-controls', collapseID).text(categoryData.name)
 
   cardHeaderTag.append(headerTextTag)
+  cardHeaderTag.css('cursor', 'pointer')
 
   // Build the category card collapse which holds the body of the category card
   let cardCollapseTag = $('<div/>').addClass('collapse').attr('id', collapseID)

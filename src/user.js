@@ -220,7 +220,7 @@ export function logoutUser () {
 
 export function updateUserState (userInfo) {
   console.log('updating user info')
-  if (userInfo) {
+  if (userInfo && !userInfo.invalid) {
     $('#navLogin').attr('hidden', '')
     $('#navUsername').removeAttr('hidden')
     $('#navUsernameText').html(`Hello ${userInfo.firstname} &nbsp;&nbsp;|`)

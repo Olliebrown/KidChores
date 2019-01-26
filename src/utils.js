@@ -1,3 +1,5 @@
+/* global $ */
+
 // General utility functions used in many locations
 
 // Handy tool for reading and writing cookies
@@ -45,4 +47,12 @@ export function makeAJAXSettings (URL, successCallback, payloadData, responseDat
 
   // Return settings object
   return settings
+}
+
+export function makeSpinner () {
+  let spinner = $('<div/>').addClass('lds-spinner')
+  for (let i = 0; i < 12; i++) {
+    spinner.append($('<div/>'))
+  }
+  return spinner
 }
